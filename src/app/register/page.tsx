@@ -13,7 +13,6 @@ const montserrat = Montserrat({
 
 
 export default function Register() {
-  const [tab, setTab] = useState('patient')
   const router = useRouter()
 
   // Patient registration
@@ -21,7 +20,6 @@ export default function Register() {
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [otp, setOtp] = useState('');
   const [step, setStep] = useState('phone'); // or 'verify'
   const [isLoading, setIsLoading] = useState(false);

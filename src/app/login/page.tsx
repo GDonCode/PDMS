@@ -42,7 +42,7 @@ export default function Login() {
       } else {
         setStep('otp')
       }
-    } catch (err) {
+    } catch (error) {
       setError('An unexpected error occurred')
     } finally {
       setIsLoading(false)
@@ -70,7 +70,7 @@ export default function Login() {
       } else {
         router.push('/dashboard/patient')
       }
-    } catch (err) {
+    } catch (error) {
       setError('An unexpected error occurred')
     } finally {
       setIsLoading(false)
@@ -97,7 +97,7 @@ export default function Login() {
       } else {
         router.push('/dashboard/doctor')
       }
-    } catch (err) {
+    } catch (error) {
       setError('An unexpected error occurred')
     } finally {
       setIsLoading(false)

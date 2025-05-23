@@ -1,7 +1,6 @@
 'use client'
 import React from 'react'
 import Image from 'next/image'
-import Link from 'next/link'
 import { Montserrat } from 'next/font/google'
 import { useEffect, useState } from 'react'
 import supabase from '@/app/lib/supabaseClient'
@@ -22,8 +21,7 @@ export default function DoctorDashboard() {
 
   const router = useRouter()
 
-  // 🔐 Load session and listen to auth changes
-  useEffect(() => {
+ useEffect(() => {
     const getCurrentSession = async () => {
       const {
         data: { session },
@@ -38,15 +36,18 @@ export default function DoctorDashboard() {
       setSession(session)
       setUser(session?.user || null)
 
-      if (!session?.user?.email) {
+      if (!session?.user.email) {
         setShowToast(true)
-      } else {
+      }
+      else {
         setShowToast(false)
       }
     }
 
+    // Set current session on load
     getCurrentSession()
 
+    // Listen for auth state changes (signup, login)
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session)
       setUser(session?.user || null)
@@ -76,6 +77,16 @@ export default function DoctorDashboard() {
       router.push('/login')
     }
   }
+//NEED THIS FOR PAGE TO DEPLOY FOR SOME REASON 
+    useEffect(() => {
+      const loadDoctorProfile = async () => {
+        if (!user?.id) return;
+      };
+
+      loadDoctorProfile();
+    }, [user]);
+
+
 
   return (
     <div className={`${montserrat.className} min-h-screen bg-slate-50`}>

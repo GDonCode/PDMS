@@ -1,7 +1,6 @@
 'use client'
 import React from 'react'
 import Image from 'next/image'
-import Link from 'next/link'
 import { Montserrat } from 'next/font/google'
 import { useEffect, useState } from 'react'
 import supabase from '@/app/lib/supabaseClient'
@@ -111,6 +110,8 @@ export default function PatientDashboard() {
         setexerciseValue(data.exercise_frequency || '')
         setdietRestrictionValue(data.diet_restrictions || '')
         setfamHistoryValue(data.family_history || '')
+        setheightValue(data.height || '')
+        setweightValue(data.weight || '')
       }
     }
 
@@ -150,6 +151,8 @@ export default function PatientDashboard() {
   const [exerciseValue, setexerciseValue] = useState('');
   const [dietRestrictionValue, setdietRestrictionValue] = useState('');
   const [famHistoryValue, setfamHistoryValue] = useState('');
+  const [heightValue, setheightValue] = useState('');
+  const [weightValue, setweightValue] = useState('');
 
   const MovetoDB = async () => {
 
@@ -182,10 +185,10 @@ export default function PatientDashboard() {
         diet_restrictions: dietRestrictionValue || null,
         family_history: famHistoryValue || null
       }])
-      if (PatientProfileError) {
-      console.error('Error inserting data:', PatientProfileError);
+      if (PatientProfileData) {
+        console.error('❌ Error updating patients table:', PatientProfileError)
       } else {
-        alert('Profile Data Updated');
+        console.error('Error inserting data:', PatientProfileError);
       }
       
       const { error: emailUpdateError } = await supabase.auth.updateUser({
@@ -616,6 +619,32 @@ export default function PatientDashboard() {
                               <option value="female">Female</option>
                               <option value="other">Other</option>
                             </select>
+                          </div>
+                          <div>
+                            <label htmlFor="height" className="block text-sm font-medium text-slate-700 mb-1">
+                              Height
+                            </label>
+                            <input
+                              type="text"
+                              id="height"
+                              name="height"
+                              className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              value={heightValue}
+                              onChange={(e) => setheightValue(e.target.value)}
+                            />
+                          </div>
+                          <div>
+                            <label htmlFor="height" className="block text-sm font-medium text-slate-700 mb-1">
+                              Height
+                            </label>
+                            <input
+                              type="text"
+                              id="weight"
+                              name="weight"
+                              className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              value={weightValue}
+                              onChange={(e) => setweightValue(e.target.value)}
+                            />
                           </div>
                           <div className="md:col-span-2">
                             <label htmlFor="address" className="block text-sm font-medium text-slate-700 mb-1">
