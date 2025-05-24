@@ -1,12 +1,13 @@
+// /app/api/invite-doctor.ts
 
-import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
 
 export async function POST(req: Request) {
-  const { email } = await req.json()
+  const { first_name, last_name, email, specialization } = await req.json()
 
-  if (!email) {
-    return NextResponse.json({ error: 'Email is required' }, { status: 400 })
+  if (!email || !first_name) {
+    return NextResponse.json({ error: 'Name and email are required' }, { status: 400 })
   }
 
   const supabase = createClient(
@@ -14,11 +15,31 @@ export async function POST(req: Request) {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
 
-  const { error } = await supabase.auth.admin.inviteUserByEmail(email)
+  // 1. Create user
+  const { data: user, error: userError } = await supabase.auth.admin.createUser({
+    email,
+    email_confirm: true
+  })
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+  if (userError || !user?.user?.id) {
+    return NextResponse.json({ error: userError?.message || 'User creation failed' }, { status: 500 })
   }
 
-  return NextResponse.json({ message: `Invite sent to ${email}` })
+  // 2. Insert doctor profile
+  const { error: doctorError } = await supabase
+    .from('doctors')
+    .insert({
+      first_name,
+      last_name,
+      email,
+      specialization,
+      status: 'pending',
+      user_id: user.user.id
+    })
+
+  if (doctorError) {
+    return NextResponse.json({ error: doctorError.message }, { status: 500 })
+  }
+
+  return NextResponse.json({ message: `Doctor invited: ${email}` })
 }
