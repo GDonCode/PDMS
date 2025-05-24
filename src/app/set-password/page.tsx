@@ -1,33 +1,30 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 
 export default function SetPasswordPage() {
   const supabase = createClientComponentClient()
   const router = useRouter()
-  const searchParams = useSearchParams()
-
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const token = searchParams.get('token')
-
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const token = params.get('token')
+
     if (!token) {
-      setError('Missing token')
+      setError('Missing token in URL')
       return
     }
 
-    // Exchange token for a session
-    supabase.auth
-      .exchangeCodeForSession(token)
-      .then(({ error }) => {
-        if (error) setError(error.message)
-      })
-  }, [token])
+    // Exchange token for session
+    supabase.auth.exchangeCodeForSession(token).then(({ error }) => {
+      if (error) setError(error.message)
+    })
+  }, [])
 
   const handleSubmit = async () => {
     setLoading(true)
@@ -36,7 +33,7 @@ export default function SetPasswordPage() {
     setLoading(false)
 
     if (error) return setError(error.message)
-    router.push('/login') // or dashboard
+    router.push('/login')
   }
 
   return (
