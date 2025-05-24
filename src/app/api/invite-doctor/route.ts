@@ -16,10 +16,7 @@ export async function POST(req: Request) {
   )
 
   // 1. Create user
-  const { data: user, error: userError } = await supabase.auth.admin.createUser({
-    email,
-    email_confirm: true
-  })
+  const { data: user, error: userError } = await supabase.auth.admin.inviteUserByEmail(email)
 
   if (userError || !user?.user?.id) {
     return NextResponse.json({ error: userError?.message || 'User creation failed' }, { status: 500 })
@@ -34,7 +31,7 @@ export async function POST(req: Request) {
       email,
       specialization,
       status: 'pending',
-      user_id: user.user.id
+      id: user.user.id
     })
 
   if (doctorError) {
