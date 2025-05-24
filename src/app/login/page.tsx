@@ -43,6 +43,7 @@ export default function Login() {
         setStep('otp')
       }
     } catch (error) {
+      console.error('Unexpected error during OTP send:', error)
       setError('An unexpected error occurred')
     } finally {
       setIsLoading(false)
@@ -71,6 +72,7 @@ export default function Login() {
         router.push('/dashboard/patient')
       }
     } catch (error) {
+      console.error('Unexpected error during OTP send:', error)
       setError('An unexpected error occurred')
     } finally {
       setIsLoading(false)
@@ -98,6 +100,7 @@ export default function Login() {
         router.push('/dashboard/doctor')
       }
     } catch (error) {
+      console.error('Unexpected error during OTP send:', error)
       setError('An unexpected error occurred')
     } finally {
       setIsLoading(false)
@@ -325,7 +328,7 @@ export default function Login() {
         
         <div className="mt-6 text-center">
           <p className="text-sm text-slate-300">
-            Don't have an account?{' '}
+            Don&rsquo;t have an account?{' '}
             <a href="/register" className="text-white underline">
               Register
             </a>

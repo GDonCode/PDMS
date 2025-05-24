@@ -15,11 +15,35 @@ const montserrat = Montserrat({
 export default function DoctorDashboard() {
   const [activeSection, setActiveSection] = useState<'overview' | 'appointments' | 'patients' | 'profile' | 'settings'>('overview')
   const [user, setUser] = useState<User | null>(null)
-  const [session, setSession] = useState<Session | null>(null)
+  const [, setSession] = useState<Session | null>(null)
   const [showToast, setShowToast] = useState(false)
-  const [patients, setPatients] = useState<any[]>([]);
+  const [patients, setPatients] = useState<Patient[]>([]);
 
   const router = useRouter()
+  type Patient = {
+    id?: string
+    first_name?: string
+    last_name?: string
+    dob?: string
+    email?: string
+    address?: string
+    gender?: string
+    phone?: string
+    allergies?: string
+    medical_history?: string
+    emergency_name?: string
+    emergency_contact?: string
+    emergency_relation?: string
+    medical_conditions?: string
+    current_medications?: string
+    surgeries?: string
+    drinking_frequency?: string
+    smoking_frequency?: string
+    exercise_frequency?: string
+    diet_restrictions?: string
+    family_history?: string
+    age?: number
+  };
 
  useEffect(() => {
     const getCurrentSession = async () => {
