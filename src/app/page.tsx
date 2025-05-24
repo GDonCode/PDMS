@@ -23,6 +23,12 @@ export default function HomePage() {
       >
         Test
       </Link>
+      <Link
+        href="/admin"
+        className="px-6 py-3 text-white bg-blue-600 rounded hover:bg-blue-700 transition"
+      >
+        Admin
+      </Link>
     </main>
   )
 }
