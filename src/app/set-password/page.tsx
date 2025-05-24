@@ -1,3 +1,4 @@
+// app/set-password/page.tsx
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -14,13 +15,11 @@ export default function SetPasswordPage() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const token = params.get('token')
-
     if (!token) {
-      setError('Missing token in URL')
+      setError('Missing token')
       return
     }
 
-    // Exchange token for session
     supabase.auth.exchangeCodeForSession(token).then(({ error }) => {
       if (error) setError(error.message)
     })
