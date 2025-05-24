@@ -110,8 +110,18 @@ export default function DoctorDashboard() {
       loadDoctorProfile();
     }, [user]);
 
+    useEffect(() => {
+    const checkFirstLogin = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
 
+      // Check if user hasn't set password yet
+      if (!user?.user_metadata?.has_password) {
+        router.push('/set-password')
+      }
+    }
 
+    checkFirstLogin()
+  }, [])
   return (
     <div className={`${montserrat.className} min-h-screen bg-slate-50`}>
     

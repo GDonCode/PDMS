@@ -40,15 +40,23 @@ export default function SetPasswordPage() {
 
 
 
+
   const handleSubmit = async () => {
     setLoading(true)
     setError('')
-    const { error } = await supabase.auth.updateUser({ password })
+
+    const { error } = await supabase.auth.updateUser({
+        password,
+        data: { has_password: true }, // 👈 set metadata flag here
+    })
+
     setLoading(false)
 
     if (error) return setError(error.message)
+
     router.push('/login')
-  }
+    }
+
 
   return (
     <main className="flex flex-col items-center justify-center min-h-screen p-4">
