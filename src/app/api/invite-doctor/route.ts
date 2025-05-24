@@ -14,7 +14,7 @@ export async function POST(req: Request) {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
 
-  const { data, error } = await supabase.auth.admin.inviteUserByEmail(email)
+  const { error } = await supabase.auth.admin.inviteUserByEmail(email)
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
