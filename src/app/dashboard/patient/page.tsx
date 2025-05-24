@@ -54,13 +54,13 @@ export default function PatientDashboard() {
     }
   }, [])
 
-  const welcomeName = document.getElementById('welcomeName')
-  const accountName = document.getElementById('accountName') 
-  const dobOverview = document.getElementById('dobOverview')
-  const genOverview = document.getElementById('genOverview')
-  const heightOverview = document.getElementById('heightOverview')
-  const weightOverview = document.getElementById('weightOverview')
   useEffect(() => {
+    const welcomeName = document.getElementById('welcomeName')
+    const accountName = document.getElementById('accountName') 
+    const dobOverview = document.getElementById('dobOverview')
+    const genOverview = document.getElementById('genOverview')
+    const heightOverview = document.getElementById('heightOverview')
+    const weightOverview = document.getElementById('weightOverview')
     const loadPatientProfile = async () => {
       if (!user?.id) return
 
