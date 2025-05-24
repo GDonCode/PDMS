@@ -1,12 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { createClient } from '@supabase/supabase-js'
-
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY! 
-)
 
 export default function DoctorInviteAdminPanel() {
   const [email, setEmail] = useState('')
@@ -17,20 +11,18 @@ export default function DoctorInviteAdminPanel() {
     setLoading(true)
     setMessage(null)
 
-    if (!email) {
-      setMessage('Please enter a valid email')
-      setLoading(false)
-      return
-    }
+    const res = await fetch('/api/invite-doctor', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    })
 
-    const { data, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email)
+    const result = await res.json()
 
-    if (error) {
-      console.error('Error inviting doctor:', error.message)
-      setMessage(`❌ Error: ${error.message}`)
+    if (!res.ok) {
+      setMessage(`❌ Error: ${result.error}`)
     } else {
-      console.log('Invite sent:', data)
-      setMessage(`✅ Invite sent to ${email}`)
+      setMessage(`✅ ${result.message}`)
     }
 
     setEmail('')
