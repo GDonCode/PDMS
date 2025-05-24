@@ -13,21 +13,32 @@ export default function SetPasswordPage() {
 
   useEffect(() => {
     const hash = window.location.hash
-    const params = new URLSearchParams(hash.replace('#', ''))
+
+    // Parse the access token
+    const params = new URLSearchParams(hash.substring(1))
     const accessToken = params.get('access_token')
+    const refreshToken = params.get('refresh_token') // optional
 
     if (accessToken) {
-      supabase.auth.setSession({
-        access_token: accessToken,
-        refresh_token: '' // Not needed for password update
-      }).catch((e) => {
-        console.error(e)
-        setError('Failed to authenticate. Try the link again.')
-      })
+        supabase.auth
+        .setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken || '', // better to include this
+        })
+        .then(() => {
+            // Clear the hash from URL after it's used
+            window.history.replaceState(null, '', window.location.pathname)
+        })
+        .catch((e) => {
+            console.error(e)
+            setError('Failed to authenticate. Try the link again.')
+        })
     } else {
-      setError('No access token found. Please use the email link.')
+        setError('No access token found. Please use the link from your email.')
     }
-  }, [])
+    }, [supabase])
+
+
 
   const handleSubmit = async () => {
     setLoading(true)
