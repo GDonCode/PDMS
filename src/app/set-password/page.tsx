@@ -1,4 +1,3 @@
-// app/set-password/page.tsx
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -13,16 +12,21 @@ export default function SetPasswordPage() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    const token = params.get('token')
-    if (!token) {
-      setError('Missing token')
-      return
-    }
+    const hash = window.location.hash
+    const params = new URLSearchParams(hash.replace('#', ''))
+    const accessToken = params.get('access_token')
 
-    supabase.auth.exchangeCodeForSession(token).then(({ error }) => {
-      if (error) setError(error.message)
-    })
+    if (accessToken) {
+      supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: '' // Not needed for password update
+      }).catch((e) => {
+        console.error(e)
+        setError('Failed to authenticate. Try the link again.')
+      })
+    } else {
+      setError('No access token found. Please use the email link.')
+    }
   }, [])
 
   const handleSubmit = async () => {
