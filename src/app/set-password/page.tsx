@@ -13,8 +13,7 @@ export default function SetPasswordPage() {
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
-    const hash = window.location.hash
-    const params = new URLSearchParams(hash.substring(1))
+    const params = new URLSearchParams(window.location.search)
     const access_token = params.get('access_token')
     const refresh_token = params.get('refresh_token')
 
