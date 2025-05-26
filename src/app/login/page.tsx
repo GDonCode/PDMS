@@ -122,7 +122,7 @@ export default function Login() {
 
   return (
     <div className={`${montserrat.className} min-h-screen gradient-background flex items-center justify-center p-4`}>
-      <div className="max-w-md w-full relative z-10">
+      <div className="max-w-2xl w-full relative z-10">
         {/* Logo & Branding */}
         <div className="text-center mb-8">
           <Image 
