@@ -27,8 +27,6 @@ export default function PatientDashboard() {
       } catch (err: unknown) {
         if (err instanceof Error) {
           console.error('Error fetching patient:', err.message);
-        } else {
-          console.error('Error fetching patient:', err);
         }
       }
     };
