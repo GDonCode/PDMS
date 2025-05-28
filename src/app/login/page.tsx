@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { Montserrat } from 'next/font/google'
+import Link from 'next/link'
 
 
 const montserrat = Montserrat({
@@ -47,9 +48,6 @@ export default function Login() {
     } finally {
       setIsLoading(false);
     }
-
-   
-    {isLoading ? 'Logging in...' : 'Log In'}
   }
 
   const doctorLogin= async () => {
@@ -77,9 +75,6 @@ export default function Login() {
     } finally {
       setIsLoading(false);
     }
-
-   
-    {isLoading ? 'Logging in...' : 'Log In'}
   }
 
   return (
@@ -87,13 +82,9 @@ export default function Login() {
       <div className="max-w-2xl w-full relative z-10">
         {/* Logo & Branding */}
         <div className="text-center mb-8">
-          <a href='/'><Image 
-            src="/logo.png"
-            alt="Elysian Health Logo"
-            width={80}
-            height={80}
-            className="mx-auto mb-4"
-          /></a>
+          <Link href='/'>
+            <Image src="/logo.png" alt="Elysian Health Logo" width={80} height={80} className="mx-auto mb-4" />
+          </Link>
           <h1 className="text-3xl font-semibold text-white">Patient Data Management System</h1>
         </div>
         

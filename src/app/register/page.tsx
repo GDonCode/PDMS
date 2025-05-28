@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { Montserrat } from 'next/font/google'
+import Link from 'next/link'
 
 
 const montserrat = Montserrat({
@@ -57,9 +58,6 @@ export default function Register() {
     } finally {
       setIsLoading(false);
     }
-
-   
-    {isLoading ? 'Registering...' : 'Register'}
   }
   
   const RegisterNewPatient= async () => {
@@ -89,9 +87,6 @@ export default function Register() {
     } finally {
       setIsLoading(false);
     }
-
-   
-    {isLoading ? 'Registering...' : 'Register'}
   }
 
   return (
@@ -99,7 +94,9 @@ export default function Register() {
     <div className={`${montserrat.className} gradient-background min-h-screen flex items-center justify-center p-4`} id="vanta-bg">
       <div className="max-w-[45rem] w-full">
         <div className="text-center mb-8">
-          <a href='/'><Image src="/logo.png" alt="Elysian Health Logo" width={80} height={80} className="mx-auto mb-4" /></a>
+          <Link href='/'>
+            <Image src="/logo.png" alt="Elysian Health Logo" width={80} height={80} className="mx-auto mb-4" />
+          </Link>
           <h1 className="text-3xl font-semibold text-white">Take control of your health.</h1>
         </div>
 

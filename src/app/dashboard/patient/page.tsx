@@ -24,8 +24,12 @@ export default function PatientDashboard() {
         if (!res.ok) throw new Error(data.error || 'Failed to fetch patient');
 
         setPatient(data.patient);
-      } catch (err) {
-        console.error('Error fetching patient:', err);
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          console.error('Error fetching patient:', err.message);
+        } else {
+          console.error('Error fetching patient:', err);
+        }
       }
     };
 
