@@ -301,7 +301,7 @@ export default function PatientDashboard() {
                       </div>
                       <div className='flex flex-col'>
                         <label className='text-sm'>Date of Birth</label>
-                        <input className="text-xl font-semibold w-[102%]" type='date' value={patient?.date_of_birth || ''} onChange={(e) => setPatient((prev: any) => ({ ...prev!, date_of_birth: e.target.value }))}/>
+                        <input className="text-xl font-semibold w-[102%]" type='date' value={patient?.date_of_birth || ''} onChange={(e) => setPatient((prev) => ({ ...prev!, date_of_birth: e.target.value }))}/>
                       </div>
                       <div className='flex flex-col'>
                         <label className='text-sm'>Sex</label>
