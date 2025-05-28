@@ -1,9 +1,9 @@
 'use client'
 import { useState } from 'react'
-import supabase from '@/app/lib/supabaseClient'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { Montserrat } from 'next/font/google'
+
 
 const montserrat = Montserrat({
   subsets: ['latin'],
@@ -12,112 +12,74 @@ const montserrat = Montserrat({
 })
 
 export default function Login() {
-  const [tab, setTab] = useState('patient')
   const router = useRouter()
-
-  // Patient state
-  const [phone, setPhone] = useState('')
-  const [otp, setOtp] = useState('')
-  const [step, setStep] = useState('phone')
-  const [isLoading, setIsLoading] = useState(false)
+  const [activeTab, setActiveTab] = useState<'patient' | 'doctor'>('patient')
   const [error, setError] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
 
-  // Doctor state
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [patientEmail, setPatientEmail] = useState('')
+  const [patientPassword, setPatientPassword] = useState('')
+  const [doctorPassword, setDoctorPassword] = useState('')
+  const [doctorEmail, setDoctorEmail] = useState('')
 
-  const handleSendOTP = async () => {
-    if (!phone) {
-      setError('Please enter your phone number')
-      return
-    }
-    
-    setIsLoading(true)
-    setError('')
-    
+  const patientLogin= async () => {
+    setIsLoading(true);
     try {
-      const { error: supabaseError } = await supabase.auth.signInWithOtp({ phone })
-      if (supabaseError) {
-        setError(supabaseError.message)
-      } else {
-        setStep('otp')
-      }
-    } catch (error) {
-      console.error('Unexpected error during OTP send:', error)
-      setError('An unexpected error occurred')
-    } finally {
-      setIsLoading(false)
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: patientEmail,
+          password: patientPassword,
+          role: activeTab, 
+        }),
+      });
+
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error || 'Login failed');
     }
+
+    router.push(`/dashboard/${activeTab}`);
+
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'An unknown error occurred');
+    } finally {
+      setIsLoading(false);
+    }
+
+   
+    {isLoading ? 'Logging in...' : 'Log In'}
   }
 
-  const handleVerifyOTP = async () => {
-    if (!otp) {
-      setError('Please enter the verification code')
-      return
-    }
-    
-    setIsLoading(true)
-    setError('')
-    
+  const doctorLogin= async () => {
+    setIsLoading(true);
     try {
-      const { error: supabaseError } = await supabase.auth.verifyOtp({ 
-        phone, 
-        token: otp, 
-        type: 'sms' 
-      })
-      
-      if (supabaseError) {
-        setError(supabaseError.message)
-      } else {
-        router.push('/dashboard/patient')
-      }
-    } catch (error) {
-      console.error('Unexpected error during OTP send:', error)
-      setError('An unexpected error occurred')
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: doctorEmail,
+          password: doctorPassword,
+          role: activeTab, 
+        }),
+      });
+
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error || 'Login failed');
+    }
+
+    router.push(`/dashboard/${activeTab}`);
+
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'An unknown error occurred');
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
 
-  const handleDoctorLogin = async () => {
-    if (!email || !password) {
-      setError('Please enter both email and password')
-      return
-    }
-    
-    setIsLoading(true)
-    setError('')
-    
-    try {
-      const { error: supabaseError } = await supabase.auth.signInWithPassword({ 
-        email, 
-        password 
-      })
-      
-      if (supabaseError) {
-        setError(supabaseError.message)
-      } else {
-        router.push('/dashboard/doctor')
-      }
-    } catch (error) {
-      console.error('Unexpected error during OTP send:', error)
-      setError('An unexpected error occurred')
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const handlePasswordReset = async () => {
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${location.origin}/reset-password`,
-    })
-
-    if (error) {
-      alert('Error sending reset link.')
-      console.error(error)
-    } else {
-      alert('Password reset email sent. Check your inbox.')
-    }
+   
+    {isLoading ? 'Logging in...' : 'Log In'}
   }
 
   return (
@@ -125,13 +87,13 @@ export default function Login() {
       <div className="max-w-2xl w-full relative z-10">
         {/* Logo & Branding */}
         <div className="text-center mb-8">
-          <Image 
+          <a href='/'><Image 
             src="/logo.png"
             alt="Elysian Health Logo"
             width={80}
             height={80}
             className="mx-auto mb-4"
-          />
+          /></a>
           <h1 className="text-3xl font-semibold text-white">Patient Data Management System</h1>
         </div>
         
@@ -141,12 +103,12 @@ export default function Login() {
           <div className="flex">
             <button
               className={`flex-1 py-4 font-medium text-center transition-colors ${
-                tab === 'patient'
+                activeTab === 'patient'
                   ? 'bg-white text-blue-700 border-b-2 border-blue-700'
                   : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
               }`}
               onClick={() => {
-                setTab('patient')
+                setActiveTab('patient')
                 setError('')
               }}
             >
@@ -154,12 +116,12 @@ export default function Login() {
             </button>
             <button
               className={`flex-1 py-4 font-medium text-center transition-colors ${
-                tab === 'doctor'
+                activeTab === 'doctor'
                   ? 'bg-white text-blue-700 border-b-2 border-blue-700'
                   : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
               }`}
               onClick={() => {
-                setTab('doctor')
+                setActiveTab('doctor')
                 setError('')
               }}
             >
@@ -175,147 +137,42 @@ export default function Login() {
               </div>
             )}
             
-            {tab === 'patient' && (
+            {activeTab === 'patient' && (
               <div className="space-y-6">
-                <h2 className="text-xl font-semibold text-slate-800 mb-4">
-                  {step === 'phone' ? 'Enter Your Mobile Number' : 'Verify Your Identity'}
-                </h2>
-                
-                {step === 'phone' ? (
-                  <>
-                    <div className="space-y-2">
-                      <label className="block text-sm font-medium text-slate-700">
-                        Phone Number
-                      </label>
-                      <input
-                        className="w-full border border-slate-300 text-black p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                        placeholder="+1 (000) 000-0000"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                      />
-                    </div>
-                    
-                    <button 
-                      className={`w-full py-3 rounded-lg font-medium transition-all ${
-                        isLoading
-                          ? 'bg-blue-300 text-white cursor-not-allowed'
-                          : 'bg-blue-700 text-white hover:bg-blue-800'
-                      }`}
-                      onClick={handleSendOTP}
-                      disabled={isLoading}
-                    >
-                      {isLoading ? 'Sending...' : 'Send Verification Code'}
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <div className="space-y-2">
-                      <label className="block text-sm font-medium text-slate-700">
-                        Verification Code
-                      </label>
-                      <input
-                        className="w-full border border-slate-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-slate-300"
-                        placeholder="Enter 6-digit code"
-                        value={otp}
-                        onChange={(e) => setOtp(e.target.value)}
-                      />
-                      <p className="text-xs text-slate-500 mt-2">
-                        A verification code has been sent to {phone}
-                      </p>
-                    </div>
-                    
-                    <div className="flex flex-col space-y-3">
-                      <button 
-                        className={`w-full py-3 rounded-lg font-medium transition-all ${
-                          isLoading
-                            ? 'bg-blue-300 text-white cursor-not-allowed'
-                            : 'bg-blue-700 text-white hover:bg-blue-800'
-                        }`}
-                        onClick={handleVerifyOTP}
-                        disabled={isLoading}
-                      >
-                        {isLoading ? 'Verifying...' : 'Verify & Sign In'}
-                      </button>
-                      
-                      <button
-                        className="text-blue-700 text-sm hover:text-blue-800 transition-colors"
-                        onClick={() => {
-                          setStep('phone')
-                          setError('')
-                        }}
-                      >
-                        Change phone number
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
+                <div>
+                  <label className="block text-sm font-medium">Email</label>
+                  <input type="email" className="w-full border border-slate-300 text-black p-3 rounded-lg focus:ring-2 focus:ring-blue-7500 focus:border-blue-700 outline-none transition-all" value={patientEmail} onChange={(e) => setPatientEmail(e.target.value)} />
+                </div>
 
-            {tab === 'doctor' && (
-              <div className="space-y-6">
-                <h2 className="text-xl font-semibold text-slate-800 mb-4">
-                  Physician Portal Login
-                </h2>
-                
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-slate-700">
-                    Email Address
-                  </label>
-                  <input
-                    className="w-full border border-slate-300 text-black p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                    placeholder="doctor@example.com"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
+                <div>
+                  <label className="block text-sm font-medium">Password</label>
+                  <input type="password" className="w-full border border-slate-300 text-black p-3 rounded-lg focus:ring-2 focus:ring-blue-700 focus:border-blue-700 outline-none transition-all" value={patientPassword} onChange={(e) => setPatientPassword(e.target.value)} />
                 </div>
-                
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-slate-700">
-                    Password
-                  </label>
-                  <input
-                    className="w-full border border-slate-300 text-black p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                    placeholder="••••••••••"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <input 
-                      id="remember-me" 
-                      type="checkbox" 
-                      className="h-4 w-4 text-blue-700 focus:ring-blue-500 border-slate-300 rounded"
-                    />
-                    <label htmlFor="remember-me" className="ml-2 block text-sm text-slate-700">
-                      Remember me
-                    </label>
-                  </div>
-                  
-                  <div className="text-sm">
-                    <a onClick={handlePasswordReset} className="text-blue-700 hover:text-blue-800">
-                      Forgot password?
-                    </a>
-                  </div>
-                </div>
-                
-                <button 
-                  className={`w-full py-3 rounded-lg font-medium transition-all ${
-                    isLoading
-                      ? 'bg-blue-300 text-white cursor-not-allowed'
-                      : 'bg-blue-700 text-white hover:bg-blue-800'
-                  }`}
-                  onClick={handleDoctorLogin}
-                  disabled={isLoading}
-                >
-                  {isLoading ? 'Signing in...' : 'Sign In'}
+
+                <button className="w-full py-3 rounded-lg font-medium bg-blue-700 text-white hover:bg-blue-800 transition-all" onClick={patientLogin} disabled={isLoading}>
+                  {isLoading ? 'Logging in...' : 'Login'}
                 </button>
               </div>
             )}
+
+            {activeTab === 'doctor' && (
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium">Email</label>
+                  <input type="email" className="w-full border border-slate-300 text-black p-3 rounded-lg focus:ring-2 focus:ring-blue-7500 focus:border-blue-700 outline-none transition-all" value={doctorEmail} onChange={(e) => setDoctorEmail(e.target.value)} />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium">Password</label>
+                  <input type="password" className="w-full border border-slate-300 text-black p-3 rounded-lg focus:ring-2 focus:ring-blue-700 focus:border-blue-700 outline-none transition-all" value={doctorPassword} onChange={(e) => setDoctorPassword(e.target.value)} />
+                </div>
+
+                <button className="w-full py-3 rounded-lg font-medium bg-blue-700 text-white hover:bg-blue-800 transition-all" onClick={doctorLogin} disabled={isLoading}>
+                  {isLoading ? 'Logging in...' : 'Login'}
+                </button>
+              </div>
+            )}
+
           </div>
           
           {/* Footer */}

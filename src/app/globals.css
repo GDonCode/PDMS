@@ -40,3 +40,21 @@ body {
     background-position: 0% 50%;
   }
 }
+
+.i-candy-seperator {
+  background: linear-gradient(90deg, #008044, #4CAF50, #BFFF00, #4CAF50, #008044);
+  background-size: 200% 100%;
+  animation: i-candy-animation 4s ease-in-out infinite;
+}
+
+@keyframes i-candy-animation {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
