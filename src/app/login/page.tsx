@@ -129,7 +129,7 @@ export default function Login() {
             )}
             
             {activeTab === 'patient' && (
-              <div className="space-y-6">
+              <div className="space-y-6 w-full">
                 <div>
                   <label className="block text-sm font-medium">Email</label>
                   <input type="email" className="w-full border border-slate-300 text-black p-3 rounded-lg focus:ring-2 focus:ring-blue-7500 focus:border-blue-700 outline-none transition-all" value={patientEmail} onChange={(e) => setPatientEmail(e.target.value)} />
@@ -142,6 +142,9 @@ export default function Login() {
 
                 <button className="w-full py-3 rounded-lg font-medium bg-blue-700 text-white hover:bg-blue-800 transition-all" onClick={patientLogin} disabled={isLoading}>
                   {isLoading ? 'Logging in...' : 'Login'}
+                </button>
+                <button className="w-fit mx-auto py-3 px-5 rounded-lg font-medium bg-white border border-blue-700 text-bg-blue-700 transition-all" onClick={() => router.push('/register')}>
+                  or Register
                 </button>
               </div>
             )}
@@ -160,6 +163,9 @@ export default function Login() {
 
                 <button className="w-full py-3 rounded-lg font-medium bg-blue-700 text-white hover:bg-blue-800 transition-all" onClick={doctorLogin} disabled={isLoading}>
                   {isLoading ? 'Logging in...' : 'Login'}
+                </button>
+                <button className="w-full py-1 rounded-lg font-medium bg-white text-bg-blue-700 transition-all underline" onClick={() => router.push('/register')}>
+                  or Register
                 </button>
               </div>
             )}

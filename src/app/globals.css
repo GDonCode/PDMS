@@ -58,3 +58,13 @@ body {
     background-position: 0% 50%;
   }
 }
+
+
+@keyframes subtle-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.blinking-alert {
+  animation: subtle-blink 1.5s infinite;
+}
