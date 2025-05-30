@@ -73,20 +73,6 @@ export default function PatientDashboard() {
     fetchUser();
   }, []);
 
-  const handleSubmit = async () => {
-    if (!patient) return;                      
-
-    const res  = await fetch('/api/update-patient', {
-      method : 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body   : JSON.stringify(patient),           
-    });
-
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Failed to update patient');
-    alert('Patient updated successfully');
-  };
-
   const prepNewAppt = async () => {
     if (!patient) return;
   

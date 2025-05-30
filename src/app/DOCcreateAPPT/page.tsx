@@ -10,6 +10,7 @@ import supabase from '../lib/supabaseClient'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import Cookies from 'js-cookie'
+import { Patient } from '@/app/types/patient';
 
 export default function CreateAppointment(){
     const router = useRouter();
@@ -20,7 +21,7 @@ export default function CreateAppointment(){
     const [apptTime, setApptTime] = useState<string>(''); 
 
     //FETCH AND STORE DATA OF ALL PATIENTS IN THE DB
-    const [patients, setPatients] = useState<any[]>([]);
+    const [patients, setPatients] = useState<Patient[]>([]);
     useEffect(() => {
     const fetchPatients = async () => {
         const { data, error } = await supabase.from('patients').select('*');

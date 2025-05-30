@@ -20,7 +20,18 @@ export default function CreateAppointment(){
     const [apptTime, setApptTime] = useState<string>(''); 
 
     //FETCH AND STORE DATA OF ALL DOCTORS IN THE DB
-    const [doctors, setDoctors] = useState<any[]>([]);
+    type Doctor = {
+        user_id:string;
+        first_name: string;
+        last_name: string;
+        email:string;
+        license_number: string;
+        available_hours: string;
+        current_availability: string;
+        current_medications: string;
+        password: string;
+    };
+    const [doctors, setDoctors] = useState<Doctor[]>([]);
     useEffect(() => {
     const fetchDoctors = async () => {
         const { data, error } = await supabase.from('doctors').select('*');
