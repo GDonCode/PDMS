@@ -11,7 +11,7 @@ import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import Cookies from 'js-cookie'
 
-export default function createAppointment(){
+export default function CreateAppointment(){
     const router = useRouter();
     const [apptTitle, setApptTitle] = useState<string>('');
     const [patientName, setPatientName] = useState<string>('');
