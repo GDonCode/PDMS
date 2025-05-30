@@ -57,7 +57,9 @@ export default function PatientDashboard() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await fetch('/api/patient');
+        const res = await fetch('/api/patient', {
+          credentials: 'include',
+        });
         const data = await res.json();
 
         if (!res.ok) throw new Error(data.error || 'Failed to fetch patient');

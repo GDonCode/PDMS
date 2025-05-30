@@ -109,7 +109,9 @@ export default function DoctorDashboard() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await fetch('/api/doctor');
+        const res = await fetch('/api/doctor', {
+          credentials: 'include',
+        });
         const data = await res.json();
 
         if (!res.ok) throw new Error(data.error || 'Failed to fetch doctor');
