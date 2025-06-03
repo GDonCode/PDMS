@@ -3,7 +3,6 @@ import Image from 'next/image'
 import { Montserrat } from 'next/font/google'
 import { useEffect, useState } from 'react'
 import PatientMedicalForm from '@/app/components/patientMedicalForm';
-import { Patient } from '@/app/types/patient';
 import { useRouter } from 'next/navigation'
 import Cookies from 'js-cookie'
 import supabase from '@/app/lib/supabaseClient';
@@ -18,7 +17,9 @@ export default function DoctorDashboard() {
   // Section Switcher
   const [activeSection, setActiveSection] = useState('overview')
 
+// DOCTOR OBJECT --------- DOCTOR OBJECT --------- DOCTOR OBJECT --------- DOCTOR OBJECT --------- DOCTOR OBJECT --------- DOCTOR OBJECT --------- DOCTOR OBJECT ---------
   type Doctor = {
+    user_id: string;
     first_name: string;
     last_name: string;
     email:string;
@@ -28,6 +29,10 @@ export default function DoctorDashboard() {
     current_medications: string;
     password: string;
   };
+  const [doctor, setDoctor] = useState<Doctor | null>(null);
+// ------------------------------------------------------------------------------------------------------------------------------------------------------
+
+// APPOINTMENT OBJECT --------- APPOINTMENT OBJECT --------- APPOINTMENT OBJECT --------- APPOINTMENT OBJECT --------- APPOINTMENT OBJECT --------- APPOINTMENT OBJECT ---------
   type Appointment = {
     id: string;
     appointment_title: string;
@@ -38,11 +43,33 @@ export default function DoctorDashboard() {
     created_at: string;
     appointment_status: string;
   }
-  const [doctor, setDoctor] = useState<Doctor | null>(null);
-  const [patients, setPatients] = useState<Patient[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([])
+// ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-  
+//PATIENT OBJECT --------- PATIENT OBJECT --------- PATIENT OBJECT --------- PATIENT OBJECT --------- PATIENT OBJECT --------- PATIENT OBJECT --------- PATIENT OBJECT --------- PATIENT OBJECT --------- PATIENT OBJECT --------- 
+  interface Patient {
+    user_id: string;  
+    first_name: string;
+    last_name: string;
+    date_of_birth: string;
+    sex: string;
+    phone: string;
+    age: string;
+    height: string;
+    weight: string;
+    password: string;
+    bmi: string;
+    blood_pressure: string;
+    blood_type: string;
+    resting_heart_rate: string;
+    race: string;
+    nationality: string;
+    offspring: string;
+  };
+  const [patients, setPatients] = useState<Patient[]>([]);
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+// FETCH APPOINTMENTS FROM DB --------- FETCH APPOINTMENTS FROM DB --------- FETCH APPOINTMENTS FROM DB --------- FETCH APPOINTMENTS FROM DB --------- FETCH APPOINTMENTS FROM DB --------- FETCH APPOINTMENTS FROM DB --------- FETCH APPOINTMENTS FROM DB --------- FETCH APPOINTMENTS FROM DB ---------
   const pullAppointments = async () => {
     if (!doctor) return;
     const fullName = `${doctor.first_name} ${doctor.last_name}`;
@@ -57,8 +84,10 @@ export default function DoctorDashboard() {
       setAppointments(appointments);
     }
   };
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-  
+
+// REDIRECT TO APPOINTMENT CREATION FORM --------- REDIRECT TO APPOINTMENT CREATION FORM --------- REDIRECT TO APPOINTMENT CREATION FORM --------- REDIRECT TO APPOINTMENT CREATION FORM --------- REDIRECT TO APPOINTMENT CREATION FORM --------- REDIRECT TO APPOINTMENT CREATION FORM --------- REDIRECT TO APPOINTMENT CREATION FORM --------- REDIRECT TO APPOINTMENT CREATION FORM ---------
   const prepNewAppt = async () => {
     if (!doctor) return;
   
@@ -67,6 +96,8 @@ export default function DoctorDashboard() {
     
     router.push('/DOCcreateAPPT')
   }
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 // CONFIRM APPOINTMENT --------- CONFIRM APPOINTMENT --------- CONFIRM APPOINTMENT --------- CONFIRM APPOINTMENT--------- CONFIRM APPOINTMENT--------- CONFIRM APPOINTMENT--------- CONFIRM APPOINTMENT--------- CONFIRM APPOINTMENT--------- CONFIRM APPOINTMENT
   const ApptConfirm = async (id: string) => {
@@ -105,7 +136,7 @@ export default function DoctorDashboard() {
   };
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   
-// FETCH USER --------- FETCH USER --------- FETCH USER --------- FETCH USER --------- FETCH USER --------- FETCH USER --------- FETCH USER --------- FETCH USER --------- FETCH USER --------- FETCH USER --------- 
+// FETCH CURRENT USER --------- FETCH CURRENT USER --------- FETCH CURRENT USER --------- FETCH CURRENT USER --------- FETCH CURRENT USER --------- FETCH CURRENT USER --------- FETCH CURRENT USER --------- FETCH CURRENT USER --------- FETCH USER --------- FETCH USER --------- 
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -125,6 +156,8 @@ export default function DoctorDashboard() {
     fetchUser();
   }, []);
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  
+// FETCH ALL REGISTERED PATIENTS --------- FETCH ALL REGISTERED PATIENTS --------- FETCH ALL REGISTERED PATIENTS --------- FETCH ALL REGISTERED PATIENTS --------- FETCH ALL REGISTERED PATIENTS --------- FETCH ALL REGISTERED PATIENTS --------- FETCH ALL REGISTERED PATIENTS ---------
   useEffect(() => {
     const fetchAllPatients = async () => {
       const res = await fetch('/api/get-all-patients');
@@ -137,15 +170,18 @@ export default function DoctorDashboard() {
     };
     fetchAllPatients();
   }, []);
+// -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+// FETCH APPOINTMENTS --------- FETCH APPOINTMENTS --------- FETCH APPOINTMENTS --------- FETCH APPOINTMENTS --------- FETCH APPOINTMENTS --------- FETCH APPOINTMENTS --------- FETCH APPOINTMENTS ---------
   useEffect(() => {
     pullAppointments();
   }, [doctor])
   if (activeSection === 'appointments'){
     pullAppointments();
   }
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-  // Function to toggle expansion
+// TOGGLE APPOINTMENT CARD EXPANSION ON MOBILE --------- TOGGLE APPOINTMENT CARD EXPANSION ON MOBILE --------- TOGGLE APPOINTMENT CARD EXPANSION ON MOBILE --------- TOGGLE APPOINTMENT CARD EXPANSION ON MOBILE --------- TOGGLE APPOINTMENT CARD EXPANSION ON MOBILE --------- TOGGLE APPOINTMENT CARD EXPANSION ON MOBILE --------- TOGGLE APPOINTMENT CARD EXPANSION ON MOBILE ---------
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
   const toggleExpansion = (itemId: string) => {
     setExpandedItems(prev => ({
@@ -153,7 +189,7 @@ export default function DoctorDashboard() {
       [itemId]: !prev[itemId]
     }));
   };
-
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 //DELETE APPOINTMENTS ------- DELETE APPOINTMENTS -------- DELETE APPOINTMENTS -------- DELETE APPOINTMENTS -------- DELETE APPOINTMENTS -------- DELETE APPOINTMENTS -------- DELETE APPOINTMENTS
   const ApptDelete = async (id: string) => {
@@ -175,6 +211,7 @@ export default function DoctorDashboard() {
   };
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+// UPDATE APPOINTMENT DATE AND TIME --------- UPDATE APPOINTMENT DATE AND TIME --------- UPDATE APPOINTMENT DATE AND TIME --------- UPDATE APPOINTMENT DATE AND TIME --------- UPDATE APPOINTMENT DATE AND TIME --------- UPDATE APPOINTMENT DATE AND TIME --------- UPDATE APPOINTMENT DATE AND TIME --------- UPDATE APPOINTMENT DATE AND TIME ---------
   const [reschedulingId, setReschedulingId] = useState<string | null>(null);
   const [rescheduleDate, setRescheduleDate] = useState('');
   const [rescheduleTime, setRescheduleTime] = useState('');
@@ -190,8 +227,8 @@ export default function DoctorDashboard() {
       }
 
 
-    };
-    const updateAppointment = async (id:string, date:string, time:string) => {
+  };
+  const updateAppointment = async (id:string, date:string, time:string) => {
       const { error } = await supabase
         .from('appointments')
         .update({
@@ -204,82 +241,144 @@ export default function DoctorDashboard() {
       if (error) {
         throw error;
       }
-    };
+  };
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
 
-  //DELETE ACCOUNT --------- DELETE ACCOUNT --------- DELETE ACCOUNT --------- DELETE ACCOUNT--------- DELETE ACCOUNT--------- DELETE ACCOUNT--------- DELETE ACCOUNT--------- DELETE ACCOUNT--------- DELETE ACCOUNT--------- DELETE ACCOUNT 
-    const [loading, setLoading] = useState(false);
-  
-    const handleDelete = async () => {
-      const confirmed = window.confirm("Are you sure you want to delete your account? This action cannot be undone.");
-  
-      if (!confirmed) return;
-  
-      setLoading(true);
-      try {
-        if (doctor) {
-          const userEmail = doctor.email;
-  
-          const { error } = await supabase
-            .from('users')
-            .delete()
-            .eq('email', userEmail);
-  
-          if (error) {
-            console.error("Failed to delete user:", error);
-            alert("Failed to delete your account.");
-          } else {
-            console.log("Account deleted successfully.");
-            alert("Your account has been deleted.");
-            window.location.href = '/register';
-          }
-        } else {
-          console.log("Unauthorized");
-          alert("You are not authorized to perform this action.");
-        }
-      } catch (err) {
-        console.error("Delete Account Error:", err);
-        alert("An unexpected error occurred.");
-      } finally {
-        setLoading(false);
-      }
-    };
-  
-  //------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  
-  const [upcoming, setUpcoming] = useState<Appointment[]>([]);
-  
-    useEffect(() => {
-    const now = new Date();
-    const oneWeekFromNow = new Date();
-    oneWeekFromNow.setDate(now.getDate() + 7);
-  
-    const filtered = appointments.filter((appt) => {
-      const apptDate = new Date(`${appt.appointment_date}T00:00:00`);
-      return (
-        apptDate >= now &&
-        apptDate <= oneWeekFromNow &&
-        appt.appointment_status === 'confirmed'
-      );
-    });
-  
-    setUpcoming(filtered);
-  }, [appointments]);
+//DELETE ACCOUNT --------- DELETE ACCOUNT --------- DELETE ACCOUNT --------- DELETE ACCOUNT--------- DELETE ACCOUNT--------- DELETE ACCOUNT--------- DELETE ACCOUNT--------- DELETE ACCOUNT--------- DELETE ACCOUNT--------- DELETE ACCOUNT 
+  const [loading, setLoading] = useState(false);
+  const handleDelete = async () => {
+    const confirmed = window.confirm("Are you sure you want to delete your account? This action cannot be undone.")
 
-  const tips = [
-      "Remember to stay hydrated! Drink at least 8 glasses of water daily.",
-      "Get at least 7–9 hours of sleep every night for optimal health.",
-      "Take a short walk every hour to improve circulation and posture.",
-      "Eat a variety of fruits and vegetables to boost your immune system.",
-      "Take deep breaths regularly to reduce stress and increase focus."
-    ];
+    if (!confirmed) return
+
+    setLoading(true)
+
+    try {
+      if (doctor) {
+        const res = await fetch('/api/deleteAccount', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: doctor.user_id })
+        })
+
+        const result = await res.json()
+
+        if (!res.ok) {
+          console.error("Failed to delete user:", result.error)
+          alert("Failed to delete your account.")
+        } else {
+          alert("Your account has been deleted.")
+          window.location.href = '/register'
+        }
+      } else {
+        alert("You are not authorized to perform this action.")
+      }
+    } catch (err) {
+      console.error("Delete Account Error:", err)
+      alert("An unexpected error occurred.")
+    } finally {
+      setLoading(false)
+    }
+  }
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+// SHOW UPCOMING CONFIRMED APPOINTMENTS ON OVERVIEW ---------- SHOW UPCOMING CONFIRMED APPOINTMENTS ON OVERVIEW ---------- SHOW UPCOMING CONFIRMED APPOINTMENTS ON OVERVIEW ---------- SHOW UPCOMING CONFIRMED APPOINTMENTS ON OVERVIEW ---------- SHOW UPCOMING CONFIRMED APPOINTMENTS ON OVERVIEW ---------- 
+  const [upcoming, setUpcoming] = useState<Appointment[]>([]);
+
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      try {
+        const res = await fetch('/api/upcomingAppts')
+        const data = await res.json()
+
+        if (!res.ok) throw new Error(data.error || 'Fetch failed')
+
+        setUpcoming(data)
+      } catch (err) {
+        console.error('Error loading appointments:', err)
+      }
+    }
+
+    fetchAppointments()
+  }, [])
+
+// RANDOM HEALTH TIP OF THE DAY --------- RANDOM HEALTH TIP OF THE DAY --------- RANDOM HEALTH TIP OF THE DAY --------- RANDOM HEALTH TIP OF THE DAY --------- RANDOM HEALTH TIP OF THE DAY --------- RANDOM HEALTH TIP OF THE DAY --------- RANDOM HEALTH TIP OF THE DAY ---------
+  const [selectedTip, setSelectedTip] = useState('')  
+  useEffect(() => {
+    const fetchTip = async () => {
+      try {
+        const res = await fetch('/api/healthTip')
+        const data = await res.json()
+        setSelectedTip(data.tip)
+      } catch (err) {
+        console.error('Failed to fetch tip:', err)
+      }
+    }
+
+    fetchTip()
+  }, [])
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    
+//BLOG POST OBJECT -------- BLOG POST OBJECT -------- BLOG POST OBJECT -------- BLOG POST OBJECT -------- BLOG POST OBJECT -------- BLOG POST OBJECT -------- BLOG POST OBJECT --------
+  type BlogPost = {
+    id: number
+    blog_title: string
+    blog_author: string
+    created_at: string
+    blog_preview: string
+  }
+  const [posts, setPosts] = useState<BlogPost[]>([])
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+// FETCH BLOG POST FROM DB --------- FETCH BLOG POST FROM DB --------- FETCH BLOG POST FROM DB --------- FETCH BLOG POST FROM DB --------- FETCH BLOG POST FROM DB --------- FETCH BLOG POST FROM DB --------- FETCH BLOG POST FROM DB ---------
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const response = await fetch('/api/fetchBlogPosts')
+        const data = await response.json()
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to fetch blog posts')
+        }
+
+        setPosts(data)
+      } catch (err) {
+        console.error('Error fetching blog posts:', err)
+      }
+    }
+
+    fetchPosts()
+  }, [])
+// ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+// REDIRECT TO BLOG CREATION FORM --------- REDIRECT TO BLOG CREATION FORM --------- REDIRECT TO BLOG CREATION FORM --------- REDIRECT TO BLOG CREATION FORM --------- REDIRECT TO BLOG CREATION FORM --------- REDIRECT TO BLOG CREATION FORM --------- REDIRECT TO BLOG CREATION FORM --------- REDIRECT TO BLOG CREATION FORM ---------
+  const prepNewBlogPost = async () => {
+    if (!doctor) return;
   
-    const [selectedTip, setSelectedTip] = useState('');
-  
-    useEffect(() => {
-      const randomIndex = Math.floor(Math.random() * tips.length);
-      setSelectedTip(tips[randomIndex]);
-    }, []);
+    const doctorName = `${doctor.first_name} ${doctor.last_name}`;
+    Cookies.set('fullName', doctorName, { path: '/' });
+    
+    router.push('/createBlogPost')
+  }
+// -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+const [formattedDate, setFormattedDate] = useState('')
+  useEffect(() => {
+    const fetchDate = async () => {
+      try {
+        const res = await fetch('/api/displayCurrDate')
+        const data = await res.json()
+        setFormattedDate(data.date)
+      } catch (err) {
+        console.error('Failed to fetch date:', err)
+      }
+    }
+
+    fetchDate()
+  }, [])
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   return (
     <div className="font-sans min-h-screen bg-gray-50">
       <header className={`${montserrat.className}`}>
@@ -292,7 +391,7 @@ export default function DoctorDashboard() {
           />
           <div className='flex flex-col'>
             <h1 className="text-xl font-semibold text-slate-800">Doctor Dashboard</h1>
-            <p className='text-xs'>Monday, 26th. May, 2025</p>
+            <p className='text-xs'>{formattedDate}</p>
           </div>
         </div>
       </header>
@@ -304,8 +403,8 @@ export default function DoctorDashboard() {
           {/* Sidebar NAV*/}
           <div className='bg-white shadow-md rounded-lg p-4'>
             <nav>
-              <ul className="gap-2 flex justify-between md:justify-center md:gap-4">
-                <li className='flex items-center hover:bg-emerald-100 hover:shadow-md p-2 rounded-md cursor-pointer'
+              <ul className="gap-12 md:gap-24 flex justify-center">
+                <li className='flex gap-2 items-center hover:bg-emerald-100 hover:shadow-md p-2 rounded-md cursor-pointer'
                   onClick={() => setActiveSection('overview')}>
                     <Image 
                       src="/grid.svg"
@@ -313,9 +412,9 @@ export default function DoctorDashboard() {
                       width={24}
                       height={24}
                     />
-                  <a href="#" className="block px-4 py-2 text-lg font-semibold"><span className="hidden md:block">Overview</span></a>
+                  <span className='hidden md:block text-lg font-semibold'>Overview</span>
                 </li>
-                <li className='flex items-center hover:bg-emerald-100 hover:shadow-md p-2 rounded-md cursor-pointer'
+                <li className='flex gap-2 items-center hover:bg-emerald-100 hover:shadow-md p-2 rounded-md cursor-pointer'
                   onClick={() => setActiveSection('appointments')}>
                   <Image 
                     src="/calendar.svg"
@@ -323,9 +422,9 @@ export default function DoctorDashboard() {
                     width={24}
                     height={24}
                   />
-                  <a href="#" className="block px-4 py-2 rounded-md text-lg font-semibold"><span className="hidden md:block">Appointments</span></a>
+                  <span className="hidden md:block text-lg font-semibold">Appointments</span>
                 </li>
-                <li className='flex items-center hover:bg-emerald-100 hover:shadow-md p-2 rounded-md cursor-pointer'
+                <li className='flex gap-2 items-center hover:bg-emerald-100 hover:shadow-md p-2 rounded-md cursor-pointer'
                   onClick={() => setActiveSection('patientRecords')}>
                   <Image 
                     src="/folder-plus.svg"
@@ -333,9 +432,9 @@ export default function DoctorDashboard() {
                     width={24}
                     height={24}
                   />
-                  <a href="#" className="block px-4 py-2 rounded-md text-lg font-semibold"><span className="hidden md:block">Patient Records</span></a>
+                  <span className="hidden md:block text-lg font-semibold">Patient Records</span>
                 </li>
-                <li className='flex items-center hover:bg-emerald-100 hover:shadow-md p-2 rounded-md cursor-pointer'
+                <li className='flex gap-2 items-center hover:bg-emerald-100 hover:shadow-md p-2 rounded-md cursor-pointer'
                   onClick={() => setActiveSection('profile')}>
                   <Image 
                     src="/user.svg"
@@ -343,7 +442,7 @@ export default function DoctorDashboard() {
                     width={24}
                     height={24}
                   />
-                  <a href="#" className="block px-4 py-2 rounded-md text-lg font-semibold"><span className="hidden md:block">Profile</span></a>
+                  <span className="hidden md:block text-lg font-semibold">Profile</span>
                 </li> 
               </ul>
             </nav>
@@ -354,57 +453,92 @@ export default function DoctorDashboard() {
 
             {/* OVERVIEW SECTION */} 
             {activeSection === 'overview' && 
-            <div className='flex flex-col gap-6'>
-              <div className='bg-white shadow-md rounded-lg p-4 md:p-6'>
-                <div className='flex w-fit items-center gap-3 mb-6'>
-                  <Image 
-                    src="/logo.png"
-                    alt="Logo"
-                    width={30}
-                    height={30}
-                  />
-                  <h2 className='text-xl font-semibold'>Welcome, Dr. <span id="doctorName">{doctor?.last_name || 'User'}</span>.</h2>
-                </div>
-                <div className='mb-6'>
-                  <p className='font-[550]'>Upcoming Appointments</p>
-                  <div>
-                    {upcoming.length > 0 ? (
-                      <ul className="mt-2 space-y-2">
-                        {upcoming.map(appt => (
-                          <li key={appt.id} className="text-sm border p-2 rounded-md">
-                            <strong>{appt.appointment_title}</strong> with {appt.patient_name} on{" "}
-                            {new Date(appt.appointment_date + "T00:00:00").toLocaleDateString('en-US', {
-                              weekday: 'short', month: 'short', day: 'numeric'
-                            })} at {appt.appointment_time.slice(0, 5)}
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p className="text-gray-500">no appointments scheduled</p>
-                    )}
+            <>
+              <div className='flex flex-col gap-6'>
+                <div className='bg-white shadow-md rounded-lg p-4 md:p-6'>
+                  <div className='flex w-fit items-center gap-3 mb-6'>
+                    <Image 
+                      src="/logo.png"
+                      alt="Logo"
+                      width={24}
+                      height={24}
+                    />
+                    <h2 className='text-lg font-semibold'>Welcome, Dr. <span id="doctorName">{doctor?.last_name || 'User'}</span>.</h2>
+                  </div>
+                  <div className='mb-6'>
+                    <p className='underline font-semibold'>Upcoming Appointments</p>
+                    <div>
+                      {upcoming.length > 0 ? (
+                        <ul className="mt-2 space-y-2">
+                          {upcoming.map(appt => (
+                            <li key={appt.id} className="text-sm border p-2 rounded-md">
+                              <strong>{appt.appointment_title}</strong> with {appt.patient_name} on{" "}
+                              <strong>{new Date(appt.appointment_date + "T00:00:00").toLocaleDateString('en-US', {
+                                weekday: 'short', month: 'short', day: 'numeric'
+                              })}</strong> at <strong>{appt.appointment_time.slice(0, 5)}</strong>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-gray-500">no appointments scheduled</p>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* HEALTH TIP PLUS SCROLL CTA */}
-                            <div className='bg-white shadow-md rounded-lg p-4 md:p-6'>
-                              <div className='flex flex-col gap-3'>
-                                <div className='flex items-center gap-2 border-b-4 border-[#008044]'>
-                                  <Image 
-                                    src="/info.svg"
-                                    width={16}
-                                    height={16}
-                                    alt="Information Icon"
-                                  />
-                                  <p className='font-[550] text-lg'>Health Tip of the Day</p>
+                {/* HEALTH TIP PLUS SCROLL CTA */}
+                <div className='bg-white shadow-md rounded-lg p-4 md:p-6'>
+                                <div className='flex flex-col gap-3'>
+                                  <div className='flex items-center gap-2 border-b-4 border-[#008044]'>
+                                    <Image 
+                                      src="/info.svg"
+                                      width={16}
+                                      height={16}
+                                      alt="Information Icon"
+                                    />
+                                    <p className='font-[550] text-lg'>{selectedTip}</p>
+                                  </div>
+                                  <div>
+                                    {selectedTip}
+                                  </div>
                                 </div>
-                                <div>
-                                  {selectedTip}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                          }
+                </div>
+
+                {/* BLOG */}
+                <div className='bg-white shadow=md rounded-lg p-4 md:p-6 flex flex-col gap-3'>
+                  <div className='flex items-center gap-2 border-b-4 border-[#008044]'>
+                    <Image 
+                      src="/info.svg"
+                      width={16}
+                      height={16}
+                      alt="Information Icon"
+                    />
+                    <p className='font-[550] text-lg'>Blog Posts</p>
+                  </div>
+                  <button type='submit' onClick={prepNewBlogPost} className='bg-[#008044] text-white p-2 rounded-md w-fit'>Create New Post</button>
+                
+                
+                  {posts.map((post) => (
+                    <div key={post.id} className='bg-gray-50 rounded-md shadow-lg p-4'>
+                      <div className='flex flex-col mb-4 gap-1'>
+                        <p className='font-[550] text-lg underline'>{post.blog_title}</p>
+                        <div className='flex justify-between'>
+                          <p className='text-sm'>
+                            by <span className='font-semibold'>{post.blog_author}</span>
+                          </p>
+                          <p className='text-sm'>{new Date(post.created_at).toLocaleDateString()}</p>
+                        </div>
+                      </div> 
+                      <div>{post.blog_preview}</div>
+                      <button className='mt-3 bg-[#008044] text-white p-2 rounded-sm'>View Post</button>
+                    </div>
+                  ))}
+                </div>
+
+
+              </div>
+            </>
+            }
             
             {/* APPOINTMENTS SECTION */}  
             {activeSection === 'appointments' && 
@@ -436,7 +570,7 @@ export default function DoctorDashboard() {
                 {appointments.map((appointment) => (
                   <li
                     key={appointment.id}
-                    className='bg-white p-4 w-full rounded-lg shadow-md flex flex-col gap-2 md:flex-row justify-between md:items-center border-2 border-gray-200'
+                    className='bg-white p-4 w-full rounded-lg shadow-md flex flex-col gap-2 md:flex-row justify-between md:items-start border-2 border-gray-200'
                   >
                     <div>
                       <div className='flex items-center gap-6 mb-3 md:mb-0' onClick={() => toggleExpansion(appointment.id)} style={{ cursor: 'pointer' }}>
@@ -463,29 +597,31 @@ export default function DoctorDashboard() {
                         </div>
                       </div>
 
-                      <div className='flex md:ml-12 gap-1 md:flex-col'>
+                      <div className='flex flex-col md:ml-12 gap-1 md:flex-col'>
                         <div className='flex gap-1'>
                           <p className='text-sm w-fit'>
                             {new Date(appointment.appointment_date + "T00:00:00").toLocaleDateString('en-US', {
-                                weekday: 'long',
-                                day: 'numeric',
-                                month: 'short',
+                              weekday: 'long',
+                              day: 'numeric',
+                              month: 'short',
                             })}
                           </p>
                           <p className='text-sm w-fit'>
                             at {appointment.appointment_time.slice(0, 5)}
                           </p>
                         </div>
-                        <div>
-                          <div className='ml-auto md:ml-0 flex flex-col'>
+                        
+                        {/* Status for mobile - keep original position */}
+                        <div className='md:hidden'>
+                          <div className='flex flex-col mt-6'>
                             {appointment.appointment_status === 'pending' && (
-                              <p className="ml-auto md:ml-0 md:mt-4 flex items-center gap-2 text-red-600">
+                              <p className="flex items-center gap-2 text-red-600">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-circle-alert-icon lucide-circle-alert blinking-alert"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
                                 pending...
                               </p>
                             )}
                             {appointment.appointment_status === 'confirmed' && (
-                              <p className="ml-auto md:ml-0 md:mt-4 flex items-center gap-2 text-green-600">
+                              <p className="flex items-center gap-2 text-green-600">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-calendar-check-icon lucide-calendar-check"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="m9 16 2 2 4-4"/></svg>
                                 confirmed.
                               </p>
@@ -495,8 +631,78 @@ export default function DoctorDashboard() {
                       </div>
                     </div>
 
-                    <div className={`flex gap-3 mt-4 ${expandedItems[appointment.id] ? '' : 'hidden'} md:flex`}>
+                    {/* Desktop: Status above buttons */}
+                    <div className='hidden md:flex md:flex-col md:items-end md:gap-3'>
+                      {/* Status for desktop - moved above buttons */}
+                      <div>
+                        {appointment.appointment_status === 'pending' && (
+                          <p className="flex items-center gap-2 text-red-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-circle-alert-icon lucide-circle-alert blinking-alert"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+                            pending...
+                          </p>
+                        )}
+                        {appointment.appointment_status === 'confirmed' && (
+                          <p className="flex items-center gap-2 text-green-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-calendar-check-icon lucide-calendar-check"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="m9 16 2 2 4-4"/></svg>
+                            confirmed.
+                          </p>
+                        )}
+                      </div>
+                      
+                      {/* Buttons */}
+                      <div className='flex gap-3'>
                         {reschedulingId === appointment.id ? (
+                          <>
+                            <input
+                              type="date"
+                              value={rescheduleDate}
+                              onChange={(e) => setRescheduleDate(e.target.value)}
+                              className='border p-2 rounded-md text-sm'
+                            />
+                            <input
+                              type="time"
+                              value={rescheduleTime}
+                              onChange={(e) => setRescheduleTime(e.target.value)}
+                              className='border p-2 rounded-md text-sm'
+                            />
+                            <button className='bg-[#3ca444] text-white p-2 rounded-md font-semibold text-sm' onClick={() => handleUpdate(appointment.id)}>
+                              Update
+                            </button>
+                            <button className='bg-gray-300 text-black p-2 rounded-md font-semibold text-sm' onClick={() => setReschedulingId(null)}>
+                              Close
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            {appointment.appointment_status === 'confirmed' ? (
+                              <button className='bg-[#3ca444] text-white p-2 rounded-md font-semibold cursor-pointer md:px-4 text-sm' onClick={() => ApptUnConfirm(appointment.id)}>
+                                Unconfirm
+                              </button>
+                            ) : (
+                              <button className='bg-[#3ca444] text-white p-2 rounded-md font-semibold cursor-pointer md:px-4 text-sm' onClick={() => ApptConfirm(appointment.id)}>
+                                Confirm
+                              </button>
+                            )}
+                            <button className='bg-gray-300 p-2 rounded-md font-semibold cursor-pointer text-[#008044] text-sm'
+                              onClick={() => {
+                                setReschedulingId(appointment.id);
+                                setRescheduleDate(appointment.appointment_date.slice(0, 10));
+                                setRescheduleTime(appointment.appointment_time);
+                              }}
+                            >
+                              Reschedule
+                            </button>
+                            <button className='bg-red-500 p-2 rounded-md font-semibold cursor-pointer text-white text-sm' onClick={() => ApptDelete(appointment.id)}>
+                              Delete
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Mobile: Original expandable buttons section */}
+                    <div className={`flex gap-3 mt-4 ${expandedItems[appointment.id] ? '' : 'hidden'} md:hidden`}>
+                      {reschedulingId === appointment.id ? (
                         <>
                           <input
                             type="date"
@@ -505,33 +711,33 @@ export default function DoctorDashboard() {
                             className='border p-2 rounded-md text-sm'
                           />
                           <input
-                                              type="time"
-                                              value={rescheduleTime}
-                                              onChange={(e) => setRescheduleTime(e.target.value)}
-                                              className='border p-2 rounded-md text-sm'
+                            type="time"
+                            value={rescheduleTime}
+                            onChange={(e) => setRescheduleTime(e.target.value)}
+                            className='border p-2 rounded-md text-sm'
                           />
                           <button className='bg-[#3ca444] text-white p-2 rounded-md font-semibold text-sm' onClick={() => handleUpdate(appointment.id)}>
                             Update
                           </button>
                           <button className='bg-gray-300 text-black p-2 rounded-md font-semibold text-sm' onClick={() => setReschedulingId(null)}>
-                            =Close
+                            Close
                           </button>
                         </>
-                        ) : (
+                      ) : (
                         <>
-                        {appointment.appointment_status === 'confirmed' ? (
-                          <button className='bg-[#3ca444] text-white p-2 rounded-md font-semibold cursor-pointer md:px-4 text-sm' onClick={() => ApptUnConfirm(appointment.id)}>
-                            Unconfirm
-                          </button>
-                        ) : (
-                          <button className='bg-[#3ca444] text-white p-2 rounded-md font-semibold cursor-pointer md:px-4 text-sm' onClick={() => ApptConfirm(appointment.id)}>
-                             Confirm
-                          </button>
-                        )}
+                          {appointment.appointment_status === 'confirmed' ? (
+                            <button className='bg-[#3ca444] text-white p-2 rounded-md font-semibold cursor-pointer md:px-4 text-sm' onClick={() => ApptUnConfirm(appointment.id)}>
+                              Unconfirm
+                            </button>
+                          ) : (
+                            <button className='bg-[#3ca444] text-white p-2 rounded-md font-semibold cursor-pointer md:px-4 text-sm' onClick={() => ApptConfirm(appointment.id)}>
+                              Confirm
+                            </button>
+                          )}
                           <button className='bg-gray-300 p-2 rounded-md font-semibold cursor-pointer text-[#008044] text-sm'
                             onClick={() => {
                               setReschedulingId(appointment.id);
-                              setRescheduleDate(appointment.appointment_date.slice(0, 10)); // assumes 'YYYY-MM-DD'
+                              setRescheduleDate(appointment.appointment_date.slice(0, 10));
                               setRescheduleTime(appointment.appointment_time);
                             }}
                           >
@@ -547,24 +753,26 @@ export default function DoctorDashboard() {
                 ))}
               </ul>
             </div>
-            </>}
+            </>
+            }
 
             {/* PROFILE SECTION */}
             {activeSection === 'profile' &&
-              <>
+            <>
                 <div>
                   <button className='bg-red-600 text-white text-xl p-2 rounded-md font-semibold cursor-pointer md:px-4 mt-6 mb-6' onClick={() => window.location.replace('/login')}>SIGN OUT</button>
                 </div>
                 <div>
                   <button className='bg-red-600 text-white text-xl p-2 rounded-md font-semibold cursor-pointer md:px-4' onClick={handleDelete} disabled={loading}>DELETE ACCOUNT</button>
                 </div>
-              </>
+            </>
             }
 
             {/* PATIENT RECORDS SECTION */}
             {activeSection === 'patientRecords' && 
+            <>
               <div className='bg-white shadow-md rounded-lg p-4 md:p-6'>
-                <div className='flex gap-3 mb-12'>
+                <div className='flex gap-3 mb-6'>
                   <Image 
                     src="/logo.png"
                     alt="Logo"
@@ -611,32 +819,44 @@ export default function DoctorDashboard() {
                     {patients.map((patient) => (
                       <div
                         key={patient.user_id}
-                        className="flex gap-3 mb-4 border cursor-pointer"
+                        className="flex items-center justify-between mb-4 cursor-pointer bg-gray-100 p-2 rounded-md"
                         onClick={() => setSelectedPatient(patient)}
                       >
-                        <Image
-                          src="/user.svg"
-                          alt="User Icon"
-                          width={24}
-                          height={24}
-                        />
-                        <div className="flex-col">
-                          <h2 className="font-semibold text-lg">
-                            <span>{patient.first_name}</span> <span>{patient.last_name}</span>
-                          </h2>
-                          <p>
-                            <span>{patient.sex}</span>, <span>{patient.age}</span> years old
-                          </p>
+                        <div className='flex gap-4 items-center'>
+                          <div className='bg-emerald-100 rounded-full flex items-center justify-center h-fit p-2'>
+                            <Image
+                              src="/user.svg"
+                              alt="User Icon"
+                              width={20}
+                              height={20}
+                            />
+                          </div>
+                          <div className="flex-col">
+                            <h2 className="font-semibold">
+                              <span>{patient.first_name}</span> <span>{patient.last_name}</span>
+                            </h2>
+                            <p>
+                              <span className='text-sm'>{patient.sex}</span>, <span>{patient.age}</span> years old
+                            </p>
+                          </div>
                         </div>
+                        <Image 
+                          src="/chevron-right.svg"
+                          alt="Chevron Icon"
+                          width={20}
+                          height={20}
+                        />
                       </div>
                     ))}
                   </>
                 )}
               </div>
+            </>
             }
 
             {/* MESSAGING SECTION */}
             {activeSection === 'messaging' && 
+            <>
               <div className="flex flex-col h-full max-h-[90vh] border rounded-lg shadow-md bg-white">
     
               {/* Chat Header */}
@@ -674,12 +894,13 @@ export default function DoctorDashboard() {
                   Send
                 </button>
               </form>
-            </div>
+              </div>
+            </>
             }
 
             {/* SETTINGS SECTION */}
             {activeSection === 'settings' && 
-              <></>
+            <></>
             }
 
           </div>

@@ -2,7 +2,6 @@
 import Image from 'next/image'
 import { Montserrat } from 'next/font/google'
 import { useEffect, useState } from 'react'
-import { Patient } from '@/app/types/patient';
 import Cookies from 'js-cookie';
 import { useRouter } from 'next/navigation'
 import supabase from '@/app/lib/supabaseClient';
@@ -16,8 +15,32 @@ export default function PatientDashboard() {
   const router = useRouter();
   // Section Switcher
   const [activeSection, setActiveSection] = useState('overview')
-  
+
+
+//PATIENT OBJECT --------- PATIENT OBJECT --------- PATIENT OBJECT --------- PATIENT OBJECT --------- PATIENT OBJECT --------- PATIENT OBJECT --------- PATIENT OBJECT --------- PATIENT OBJECT --------- PATIENT OBJECT --------- 
+  interface Patient {
+    user_id: string;  
+    first_name: string;
+    last_name: string;
+    date_of_birth: string;
+    sex: string;
+    phone: string;
+    age: string;
+    height: string;
+    weight: string;
+    password: string;
+    bmi: string;
+    blood_pressure: string;
+    blood_type: string;
+    resting_heart_rate: string;
+    race: string;
+    nationality: string;
+    offspring: string;
+  };
   const [patient, setPatient] = useState<Patient | null>(null);
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+//APPOINTMENT OBJECT -------- APPOINTMENT OBJECT -------- APPOINTMENT OBJECT -------- APPOINTMENT OBJECT -------- APPOINTMENT OBJECT -------- APPOINTMENT OBJECT -------- APPOINTMENT OBJECT -------- APPOINTMENT OBJECT -------- APPOINTMENT OBJECT -------- 
   type Appointment = {
     id: string;
     appointment_title: string;
@@ -29,6 +52,12 @@ export default function PatientDashboard() {
     appointment_status: string;
   }
   const [appointments, setAppointments] = useState<Appointment[]>([])
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+// PULL APPOINTMENTS FROM DB --------- PULL APPOINTMENTS FROM DB --------- PULL APPOINTMENTS FROM DB --------- PULL APPOINTMENTS FROM DB --------- PULL APPOINTMENTS FROM DB --------- PULL APPOINTMENTS FROM DB --------- PULL APPOINTMENTS FROM DB --------- PULL APPOINTMENTS FROM DB --------- PULL APPOINTMENTS FROM DB ---------  
   const pullAppointments = async() => {
       if (!patient) return;
       const fullName = `${patient.first_name} ${patient.last_name}`;
@@ -44,16 +73,15 @@ export default function PatientDashboard() {
         setAppointments(appointments);
       }
     };
-  useEffect(() => {
-    pullAppointments();
-  }, [patient])
   if (activeSection === 'appointments'){
     pullAppointments();
   }
-  if (activeSection == 'medicalRecords'){
+  useEffect(() => {
+    pullAppointments();
+  }, [patient])
+// ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-  }
-
+// FETCH LOGGGED IN USER FROM DB --------- FETCH LOGGGED IN USER FROM DB --------- FETCH LOGGGED IN USER FROM DB --------- FETCH LOGGGED IN USER FROM DB --------- FETCH LOGGGED IN USER FROM DB --------- FETCH LOGGGED IN USER FROM DB --------- FETCH LOGGGED IN USER FROM DB ---------
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -74,7 +102,9 @@ export default function PatientDashboard() {
 
     fetchUser();
   }, []);
-
+// ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 
+// STORE PATIENT NAME AND REDIRECT TO APPOINTMENT CREATION FORM --------- STORE PATIENT NAME AND REDIRECT TO APPOINTMENT CREATION FORM --------- STORE PATIENT NAME AND REDIRECT TO APPOINTMENT CREATION FORM ---------STORE PATIENT NAME AND REDIRECT TO APPOINTMENT CREATION FORM ---------STORE PATIENT NAME AND REDIRECT TO APPOINTMENT CREATION FORM ---------STORE PATIENT NAME AND REDIRECT TO APPOINTMENT CREATION FORM ---------STORE PATIENT NAME AND REDIRECT TO APPOINTMENT CREATION FORM ---------STORE PATIENT NAME AND REDIRECT TO APPOINTMENT CREATION FORM ---------
   const prepNewAppt = async () => {
     if (!patient) return;
   
@@ -83,8 +113,10 @@ export default function PatientDashboard() {
   
     router.push('/PATIENTcreateAPPT');
   }
+// -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  
 
-  // Function to toggle expansion
+// TOGGLE APPOINTMENT CARD EXPANSION ON MOBILE --------- TOGGLE APPOINTMENT CARD EXPANSION ON MOBILE --------- TOGGLE APPOINTMENT CARD EXPANSION ON MOBILE --------- TOGGLE APPOINTMENT CARD EXPANSION ON MOBILE --------- TOGGLE APPOINTMENT CARD EXPANSION ON MOBILE --------- TOGGLE APPOINTMENT CARD EXPANSION ON MOBILE ---------
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
   const toggleExpansion = (itemId: string) => {
     setExpandedItems(prev => ({
@@ -92,8 +124,10 @@ export default function PatientDashboard() {
       [itemId]: !prev[itemId]
     }));
   };
+// -------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  
 
-  //DELETE APPOINTMENTS ------- DELETE APPOINTMENTS -------- DELETE APPOINTMENTS -------- DELETE APPOINTMENTS -------- DELETE APPOINTMENTS -------- DELETE APPOINTMENTS -------- DELETE APPOINTMENTS
+//DELETE APPOINTMENTS ------- DELETE APPOINTMENTS -------- DELETE APPOINTMENTS -------- DELETE APPOINTMENTS -------- DELETE APPOINTMENTS -------- DELETE APPOINTMENTS -------- DELETE APPOINTMENTS
   const ApptDelete = async (id: string) => {
     const confirmed = confirm("Are you sure you want to delete this appointment?");
     if (!confirmed) return;
@@ -111,78 +145,82 @@ export default function PatientDashboard() {
 
     pullAppointments();
   };
-  //-------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+// UPDATE APPOINTMENT DATE AND TIME --------- UPDATE APPOINTMENT DATE AND TIME --------- UPDATE APPOINTMENT DATE AND TIME --------- UPDATE APPOINTMENT DATE AND TIME --------- UPDATE APPOINTMENT DATE AND TIME --------- UPDATE APPOINTMENT DATE AND TIME ---------
   const [reschedulingId, setReschedulingId] = useState<string | null>(null);
   const [rescheduleDate, setRescheduleDate] = useState('');
   const [rescheduleTime, setRescheduleTime] = useState('');
-
   const handleUpdate = async (id: string) => {
-    // call your backend function here if needed
-    try {
-      await updateAppointment(id, rescheduleDate, rescheduleTime); // replace with actual API/db update call
+      // call your backend function here if needed
+      try {
+        await updateAppointment(id, rescheduleDate, rescheduleTime); // replace with actual API/db update call
 
-      // Optionally refresh data or update local state if applicable
-      // Then reset reschedule state
-      setReschedulingId(null);
-    } catch (error) {
-      console.error("Error updating appointment:", error);
-    }
-  };
+        // Optionally refresh data or update local state if applicable
+        // Then reset reschedule state
+        setReschedulingId(null);
+      } catch (error) {
+        console.error("Error updating appointment:", error);
+      }
+    };
   const updateAppointment = async (id:string, date:string, time:string) => {
-    const { error } = await supabase
-      .from('appointments')
-      .update({
-        appointment_date: date,
-        appointment_time: time,
-        appointment_status: "pending",
-      })
-      .eq('id', id);
+      const { error } = await supabase
+        .from('appointments')
+        .update({
+          appointment_date: date,
+          appointment_time: time,
+          appointment_status: "pending",
+        })
+        .eq('id', id);
 
-    if (error) {
-      throw error;
-    }
-  };
-//DELETE ACCOUNT --------- DELETE ACCOUNT --------- DELETE ACCOUNT --------- DELETE ACCOUNT--------- DELETE ACCOUNT--------- DELETE ACCOUNT--------- DELETE ACCOUNT--------- DELETE ACCOUNT--------- DELETE ACCOUNT--------- DELETE ACCOUNT 
+      if (error) {
+        throw error;
+      }
+    };
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+//DELETE USER ACCOUNT --------- DELETE USER ACCOUNT --------- DELETE USER ACCOUNT --------- DELETE USER ACCOUNT--------- DELETE USER ACCOUNT--------- DELETE USER ACCOUNT--------- DELETE USER ACCOUNT--------- DELETE USER ACCOUNT--------- DELETE USER ACCOUNT--------- DELETE USER ACCOUNT 
   const [loading, setLoading] = useState(false);
-
   const handleDelete = async () => {
-    const confirmed = window.confirm("Are you sure you want to delete your account? This action cannot be undone.");
+    const confirmed = window.confirm("Are you sure you want to delete your account? This action cannot be undone.")
 
-    if (!confirmed) return;
+    if (!confirmed) return
 
-    setLoading(true);
+    setLoading(true)
+
     try {
       if (patient) {
-        const userId = patient.user_id;
+        const res = await fetch('/api/deleteAccount', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: patient.user_id })
+        })
 
-        const { error } = await supabase
-          .from('users')
-          .delete()
-          .eq('id', userId);
+        const result = await res.json()
 
-        if (error) {
-          console.error("Failed to delete user:", error);
-          alert("Failed to delete your account.");
+        if (!res.ok) {
+          console.error("Failed to delete user:", result.error)
+          alert("Failed to delete your account.")
         } else {
-          console.log("Account deleted successfully.");
-          alert("Your account has been deleted.");
-          window.location.href = '/register';
+          alert("Your account has been deleted.")
+          window.location.href = '/register'
         }
       } else {
-        console.log("Unauthorized");
-        alert("You are not authorized to perform this action.");
+        alert("You are not authorized to perform this action.")
       }
     } catch (err) {
-      console.error("Delete Account Error:", err);
-      alert("An unexpected error occurred.");
+      console.error("Delete Account Error:", err)
+      alert("An unexpected error occurred.")
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
-
+  }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  
+
+
+// SAVE UPDATED PATIENT DATA --------- SAVE UPDATED PATIENT DATA --------- SAVE UPDATED PATIENT DATA --------- SAVE UPDATED PATIENT DATA --------- SAVE UPDATED PATIENT DATA --------- SAVE UPDATED PATIENT DATA --------- SAVE UPDATED PATIENT DATA ---------
   const [isEditing, setIsEditing] = useState(false);
   const [editedPatient, setEditedPatient] = useState<Patient | null>(null);
 
@@ -213,41 +251,98 @@ export default function PatientDashboard() {
     setEditedPatient(patient);
     setIsEditing(false);
   };
+// ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------V
+  
 
-  const tips = [
-    "Remember to stay hydrated! Drink at least 8 glasses of water daily.",
-    "Get at least 7–9 hours of sleep every night for optimal health.",
-    "Take a short walk every hour to improve circulation and posture.",
-    "Eat a variety of fruits and vegetables to boost your immune system.",
-    "Take deep breaths regularly to reduce stress and increase focus."
-  ];
-
-  const [selectedTip, setSelectedTip] = useState('');
-
+// RANDOM HEALTH TIP OF THE DAY --------- RANDOM HEALTH TIP OF THE DAY --------- RANDOM HEALTH TIP OF THE DAY --------- RANDOM HEALTH TIP OF THE DAY --------- RANDOM HEALTH TIP OF THE DAY --------- RANDOM HEALTH TIP OF THE DAY --------- RANDOM HEALTH TIP OF THE DAY ---------
+  const [selectedTip, setSelectedTip] = useState('')  
   useEffect(() => {
-    const randomIndex = Math.floor(Math.random() * tips.length);
-    setSelectedTip(tips[randomIndex]);
-  }, []);
+    const fetchTip = async () => {
+      try {
+        const res = await fetch('/api/healthTip')
+        const data = await res.json()
+        setSelectedTip(data.tip)
+      } catch (err) {
+        console.error('Failed to fetch tip:', err)
+      }
+    }
+
+    fetchTip()
+  }, [])
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
+// SHOW UPCOMING CONFIRMED APPOINTMENTS ON OVERVIEW ---------- SHOW UPCOMING CONFIRMED APPOINTMENTS ON OVERVIEW ---------- SHOW UPCOMING CONFIRMED APPOINTMENTS ON OVERVIEW ---------- SHOW UPCOMING CONFIRMED APPOINTMENTS ON OVERVIEW ---------- SHOW UPCOMING CONFIRMED APPOINTMENTS ON OVERVIEW ---------- SHOW UPCOMING CONFIRMED APPOINTMENTS ON OVERVIEW ---------- SHOW UPCOMING CONFIRMED APPOINTMENTS ON OVERVIEW ----------
   const [upcoming, setUpcoming] = useState<Appointment[]>([]);
+   useEffect(() => {
+    const fetchAppointments = async () => {
+      try {
+        const res = await fetch('/api/upcomingAppts')
+        const data = await res.json()
 
+        if (!res.ok) throw new Error(data.error || 'Fetch failed')
+
+        setUpcoming(data)
+      } catch (err) {
+        console.error('Error loading appointments:', err)
+      }
+    }
+
+    fetchAppointments()
+  }, [])
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  
+
+//BLOG POST OBJECT -------- BLOG POST OBJECT -------- BLOG POST OBJECT -------- BLOG POST OBJECT -------- BLOG POST OBJECT -------- BLOG POST OBJECT -------- BLOG POST OBJECT --------
+  type BlogPost = {
+    id: number
+    blog_title: string
+    blog_author: string
+    created_at: string
+    blog_preview: string
+  }
+  const [posts, setPosts] = useState<BlogPost[]>([])
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+// FETCH BLOG POST FROM DB ON LOAD --------- FETCH BLOG POST FROM DB ON LOAD --------- FETCH BLOG POST FROM DB ON LOAD --------- FETCH BLOG POST FROM DB ON LOAD --------- FETCH BLOG POST FROM DB ON LOAD --------- FETCH BLOG POST FROM DB ON LOAD --------- FETCH BLOG POST FROM DB ON LOAD ---------
   useEffect(() => {
-  const now = new Date();
-  const oneWeekFromNow = new Date();
-  oneWeekFromNow.setDate(now.getDate() + 7);
+    const fetchPosts = async () => {
+      try {
+        const response = await fetch('/api/fetchBlogPosts')
+        const data = await response.json()
 
-  const filtered = appointments.filter((appt) => {
-    const apptDate = new Date(`${appt.appointment_date}T00:00:00`);
-    return (
-      apptDate >= now &&
-      apptDate <= oneWeekFromNow &&
-      appt.appointment_status === 'confirmed'
-    );
-  });
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to fetch blog posts')
+        }
 
-  setUpcoming(filtered);
-}, [appointments]);
+        setPosts(data)
+      } catch (err) {
+        console.error('Error fetching blog posts:', err)
+      }
+    }
+
+    fetchPosts()
+  }, [])
+// ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+// DISPLAY CURRENT DATE IN HEADER --------- DISPLAY CURRENT DATE IN HEADER --------- DISPLAY CURRENT DATE IN HEADER --------- DISPLAY CURRENT DATE IN HEADER --------- VDISPLAY CURRENT DATE IN HEADER ---------DISPLAY CURRENT DATE IN HEADER --------- DISPLAY CURRENT DATE IN HEADER ---------
+  const [formattedDate, setFormattedDate] = useState('')
+  useEffect(() => {
+    const fetchDate = async () => {
+      try {
+        const res = await fetch('/api/displayCurrDate')
+        const data = await res.json()
+        setFormattedDate(data.date)
+      } catch (err) {
+        console.error('Failed to fetch date:', err)
+      }
+    }
+
+    fetchDate()
+  }, [])
+// -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   return (
     <div className="font-sans min-h-screen bg-gray-50">
       <header className={`${montserrat.className}`}>
@@ -260,7 +355,7 @@ export default function PatientDashboard() {
           />
           <div className='flex flex-col'>
             <h1 className="text-xl font-semibold text-slate-800">Patient Dashboard</h1>
-            <p className='text-xs'>Monday, 26th. May, 2025</p>
+            <p className="text-xs">{formattedDate}</p>
           </div>
         </div>
       </header>
@@ -364,19 +459,51 @@ export default function PatientDashboard() {
                       height={16}
                       alt="Information Icon"
                     />
-                    <p className='font-[550] text-lg'>Health Tip of the Day</p>
+                    <p className='font-[550] text-lg'>{selectedTip}</p>
                   </div>
                   <div>
                     {selectedTip}
                   </div>
                 </div>
               </div>
+
+              {/* BLOG */}
+              <div className='bg-white shadow=md rounded-lg p-4 md:p-6 flex flex-col gap-3'>
+                <div className='flex items-center gap-2 border-b-4 border-[#008044]'>
+                  <Image 
+                    src="/info.svg"
+                    width={16}
+                    height={16}
+                    alt="Information Icon"
+                  />
+                  <p className='font-[550] text-lg'>Blog Posts</p>
+                </div>
+
+
+                {posts.map((post) => (
+                  <div key={post.id} className='bg-gray-100 rounded-md drop-shadow-lg p-4'>
+                    <div className='flex flex-col mb-4 gap-1'>
+                      <p className='font-[550] text-lg underline'>{post.blog_title}</p>
+                      <div className='flex justify-between'>
+                        <p className='text-sm'>
+                          by <span className='font-semibold'>{post.blog_author}</span>
+                        </p>
+                        <p className='text-sm'>{new Date(post.created_at).toLocaleDateString()}</p>
+                      </div>
+                    </div> 
+                    <div>{post.blog_preview}</div>
+                    <button className='mt-3 bg-[#008044] text-white p-2 rounded-sm'>View Post</button>
+                  </div>
+                ))}
+              </div>
+
+
             </div>
             }
             
             {/* APPOINTMENTS SECTION */}  
             {activeSection === 'appointments' && 
-              <div className='bg-white shadow-md rounded-lg p-4 md:p-6'>
+            <div className='bg-white shadow-md rounded-lg p-4 md:p-6'>
                 <div className='mb-12'>
                   <div className='flex w-fit items-center gap-3 mb-6'>
                     <Image 
@@ -401,22 +528,22 @@ export default function PatientDashboard() {
               {/* APPOINTMENTS LIST */} 
               <ul className='mt-4 flex flex-col gap-6'>
                 {appointments.map((appointment) => (
-                                  <li
-                                    key={appointment.id}
-                                    className='bg-white p-4 w-full rounded-lg shadow-md flex flex-col gap-2 md:flex-row justify-between md:items-center border-2 border-gray-200'
-                                  >
-                                    <div>
-                                      <div
-                                        className='flex items-center gap-6 mb-3 md:mb-0'
-                                        onClick={() => toggleExpansion(appointment.id)}
-                                        style={{ cursor: 'pointer' }}
-                                      >
-                                        <Image 
-                                          src="/clipboard.svg"
-                                          alt="Appointment Icon"
-                                          width={24}
-                                          height={24}
-                                        />
+                <li
+                  key={appointment.id}
+                  className='bg-white p-4 w-full rounded-lg shadow-md flex flex-col gap-2 md:flex-row justify-between md:items-center border-2 border-gray-200'
+                >
+                  <div>
+                    <div
+                      className='flex items-center gap-6 mb-3 md:mb-0'
+                      onClick={() => toggleExpansion(appointment.id)}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <Image 
+                        src="/clipboard.svg"
+                        alt="Appointment Icon"
+                        width={24}
+                        height={24}
+                      />
                                         <div className='flex w-full'>
                                           <div>
                                             <p className='font-semibold'>{appointment.appointment_title}</p>
@@ -434,7 +561,7 @@ export default function PatientDashboard() {
                                         </div>
                                       </div>
                 
-                                      <div className='flex md:ml-12 gap-1 md:flex-col'>
+                                      <div className='flex flex-col md:ml-12 gap-1 md:flex-col'>
                                         <div className='flex gap-1'>
                                           <p className='text-sm w-fit'>
                                             {new Date(appointment.appointment_date + "T00:00:00").toLocaleDateString('en-US', {
@@ -448,15 +575,15 @@ export default function PatientDashboard() {
                                           </p>
                                         </div>
                                         <div>
-                                          <div className='ml-auto md:ml-0 flex flex-col'>
+                                          <div className='md:ml-0 flex flex-col mt-6'>
                                             {appointment.appointment_status === 'pending' && (
-                                              <p className="ml-auto md:ml-0 md:mt-4 flex items-center gap-2 text-red-600">
+                                              <p className="md:ml-0 md:mt-4 flex items-center gap-2 text-red-600">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-circle-alert-icon lucide-circle-alert blinking-alert"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
                                                 pending...
                                               </p>
                                             )}
                                             {appointment.appointment_status === 'confirmed' && (
-                                              <p className="ml-auto md:ml-0 md:mt-4 flex items-center gap-2 text-green-600">
+                                              <p className="md:ml-0 md:mt-4 flex items-center gap-2 text-green-600">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-calendar-check-icon lucide-calendar-check"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="m9 16 2 2 4-4"/></svg>
                                                 confirmed.
                                               </p>
@@ -466,22 +593,24 @@ export default function PatientDashboard() {
                                       </div>
                                     </div>
                 
-                                    <div className={`flex gap-3 mt-4 ${expandedItems[appointment.id] ? '' : 'hidden'} md:flex`}>
-                                      <div className='flex gap-3 mt-4'>
+                                    <div className={`flex gap-3 ${expandedItems[appointment.id] ? '' : 'hidden'} md:flex`}>
+                                      <div className='flex flex-col gap-3 mt-4'>
                                         {reschedulingId === appointment.id ? (
                                           <>
-                                            <input
-                                              type="date"
-                                              value={rescheduleDate}
-                                              onChange={(e) => setRescheduleDate(e.target.value)}
-                                              className='border p-2 rounded-md text-sm'
-                                            />
-                                            <input
-                                              type="time"
-                                              value={rescheduleTime}
-                                              onChange={(e) => setRescheduleTime(e.target.value)}
-                                              className='border p-2 rounded-md text-sm'
-                                            />
+                                          <div className='flex gap-3'>
+                                              <input
+                                                type="date"
+                                                value={rescheduleDate}
+                                                onChange={(e) => setRescheduleDate(e.target.value)}
+                                                className='border p-2 rounded-md text-sm'
+                                              />
+                                              <input
+                                                type="time"
+                                                value={rescheduleTime}
+                                                onChange={(e) => setRescheduleTime(e.target.value)}
+                                                className='border p-2 rounded-md text-sm'
+                                              />
+                                          </div>
                                             <button
                                               className='bg-[#3ca444] text-white p-2 rounded-md font-semibold text-sm'
                                               onClick={() => handleUpdate(appointment.id)}
@@ -496,7 +625,7 @@ export default function PatientDashboard() {
                                             </button>
                                           </>
                                         ) : (
-                                          <>
+                                          <div className='flex gap-4'>
                                             <button
                                               className='bg-gray-300 p-2 rounded-md font-semibold cursor-pointer text-[#008044] text-sm'
                                               onClick={() => {
@@ -513,7 +642,7 @@ export default function PatientDashboard() {
                                             >
                                               Delete
                                             </button>
-                                          </>
+                                          </div>
                                         )}
                                       </div>
                                     </div>
