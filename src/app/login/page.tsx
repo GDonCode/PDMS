@@ -23,8 +23,10 @@ export default function Login() {
   const [doctorPassword, setDoctorPassword] = useState('')
   const [doctorEmail, setDoctorEmail] = useState('')
 
+  
   const patientLogin= async () => {
     setIsLoading(true);
+    const errorMessage = document.getElementById("errorMessage")
     try {
       const res = await fetch('/api/login', {
         method: 'POST',
@@ -35,20 +37,21 @@ export default function Login() {
           role: activeTab, 
         }),
       });
-
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(data.error || 'Login failed');
-    }
-
-    router.push(`/dashboard/${activeTab}`);
-
+      const data = await res.json();
+      if (!res.ok) {
+        if (errorMessage) {
+          errorMessage.innerHTML = data.error || 'Login failed';
+        }
+      } else {
+        router.push(`/dashboard/${activeTab}`);
+      }
     } catch (err) {
       alert(err instanceof Error ? err.message : 'An unknown error occurred');
     } finally {
       setIsLoading(false);
     }
   }
+  
 
   const doctorLogin= async () => {
     setIsLoading(true);
@@ -95,7 +98,7 @@ export default function Login() {
             <button
               className={`flex-1 py-4 font-medium text-center transition-colors ${
                 activeTab === 'patient'
-                  ? 'bg-white text-blue-700 border-b-2 border-blue-700'
+                  ? 'bg-white text-[#45b030] border-b-2 border-[#45b030]'
                   : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
               }`}
               onClick={() => {
@@ -108,7 +111,7 @@ export default function Login() {
             <button
               className={`flex-1 py-4 font-medium text-center transition-colors ${
                 activeTab === 'doctor'
-                  ? 'bg-white text-blue-700 border-b-2 border-blue-700'
+                  ? 'bg-white text-[#45b030] border-b-2 border-[#45b030]'
                   : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
               }`}
               onClick={() => {
@@ -121,7 +124,7 @@ export default function Login() {
           </div>
 
           {/* Form Content */}
-          <div className="p-8">
+          <div className="p-8 pb-0">
             {error && (
               <div className="mb-6 bg-red-50 text-red-700 p-3 rounded-lg text-sm">
                 {error}
@@ -132,18 +135,18 @@ export default function Login() {
               <form className="space-y-6 w-full">
                 <div>
                   <label className="block text-sm font-medium">Email</label>
-                  <input type="email" className="w-full border border-slate-300 text-black p-3 rounded-lg focus:ring-2 focus:ring-blue-7500 focus:border-blue-700 outline-none transition-all" value={patientEmail} onChange={(e) => setPatientEmail(e.target.value)} />
+                  <input type="email" className="w-full border border-slate-300 text-black p-3 rounded-lg focus:ring focus:ring-black focus:border-black outline-none transition-all" value={patientEmail} onChange={(e) => setPatientEmail(e.target.value)} />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium">Password</label>
-                  <input type="password" className="w-full border border-slate-300 text-black p-3 rounded-lg focus:ring-2 focus:ring-blue-700 focus:border-blue-700 outline-none transition-all" value={patientPassword} onChange={(e) => setPatientPassword(e.target.value)} />
+                  <input type="password" className="w-full border border-slate-300 text-black p-3 rounded-lg focus:ring focus:ring-black focus:border-black outline-none transition-all" value={patientPassword} onChange={(e) => setPatientPassword(e.target.value)} />
                 </div>
 
-                <button type="button" className="w-full py-3 rounded-lg font-medium bg-blue-700 text-white hover:bg-blue-800 transition-all" onClick={patientLogin} disabled={isLoading}>
+                <button type="button" className={isLoading ? 'bg-[#2f701e] w-full py-3 rounded-lg font-medium text-white transition-all' : 'w-full py-3 rounded-lg font-medium bg-[#45b030] text-white transition-all'} onClick={patientLogin} disabled={isLoading}>
                   {isLoading ? 'Logging in...' : 'Login'}
                 </button>
-                <button type="button" className="w-fit mx-auto py-3 px-5 rounded-lg font-medium bg-white border border-blue-700 text-bg-blue-700 transition-all" onClick={() => router.push('/register')}>
+                <button type="button" className="w-full mx-auto py-3 px-5 rounded-lg font-medium bg-white border transition-all" onClick={() => router.push('/register')}>
                   or Register
                 </button>
               </form>
@@ -153,23 +156,24 @@ export default function Login() {
               <form className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium">Email</label>
-                  <input type="email" className="w-full border border-slate-300 text-black p-3 rounded-lg focus:ring-2 focus:ring-blue-7500 focus:border-blue-700 outline-none transition-all" value={doctorEmail} onChange={(e) => setDoctorEmail(e.target.value)} />
+                  <input type="email" className="w-full border border-slate-300 text-black p-3 rounded-lg focus:ring focus:ring-black focus:border-black outline-none transition-all" value={doctorEmail} onChange={(e) => setDoctorEmail(e.target.value)} />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium">Password</label>
-                  <input type="password" className="w-full border border-slate-300 text-black p-3 rounded-lg focus:ring-2 focus:ring-blue-700 focus:border-blue-700 outline-none transition-all" value={doctorPassword} onChange={(e) => setDoctorPassword(e.target.value)} />
+                  <input type="password" className="w-full border border-slate-300 text-black p-3 rounded-lg ffocus:ring focus:ring-black focus:border-black outline-none transition-all" value={doctorPassword} onChange={(e) => setDoctorPassword(e.target.value)} />
                 </div>
 
-                <button type="button" className="w-full py-3 rounded-lg font-medium bg-blue-700 text-white hover:bg-blue-800 transition-all" onClick={doctorLogin} disabled={isLoading}>
+                <button type="button" className="w-full py-3 rounded-lg font-medium bg-[#45b030] text-white transition-all" onClick={doctorLogin} disabled={isLoading}>
                   {isLoading ? 'Logging in...' : 'Login'}
                 </button>
-                <button type="button" className="w-full py-1 rounded-lg font-medium bg-white text-bg-blue-700 transition-all underline" onClick={() => router.push('/register')}>
+                <button type="button" className="w-full mx-auto py-3 px-5 rounded-lg font-medium bg-white border transition-all" onClick={() => router.push('/register')}>
                   or Register
                 </button>
               </form>
             )}
 
+            <p id="errorMessage" className='my-9 text-red-600 text-lg font-semibold mx-auto w-fit'></p>
           </div>
           
           {/* Footer */}

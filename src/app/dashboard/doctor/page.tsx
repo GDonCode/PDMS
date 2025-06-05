@@ -158,18 +158,24 @@ export default function DoctorDashboard() {
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   
 // FETCH ALL REGISTERED PATIENTS --------- FETCH ALL REGISTERED PATIENTS --------- FETCH ALL REGISTERED PATIENTS --------- FETCH ALL REGISTERED PATIENTS --------- FETCH ALL REGISTERED PATIENTS --------- FETCH ALL REGISTERED PATIENTS --------- FETCH ALL REGISTERED PATIENTS ---------
+  const [error, setError] = useState<string | null>(null);
   useEffect(() => {
-    const fetchAllPatients = async () => {
-      const res = await fetch('/api/get-all-patients');
-      const json = await res.json();
-      if (res.ok) {
-        setPatients(json.patients);
+    const fetchPatients = async () => {
+      const { data, error } = await supabase
+        .from('patients')
+        .select('*');
+
+      if (error) {
+        setError(error.message);
       } else {
-        console.error(json.error);
+        setPatients(data);
       }
     };
-    fetchAllPatients();
+
+    fetchPatients();
   }, []);
+
+  if (error) return <div>Error: {error}</div>;
 // -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 // FETCH APPOINTMENTS --------- FETCH APPOINTMENTS --------- FETCH APPOINTMENTS --------- FETCH APPOINTMENTS --------- FETCH APPOINTMENTS --------- FETCH APPOINTMENTS --------- FETCH APPOINTMENTS ---------
