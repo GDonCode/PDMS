@@ -6,7 +6,6 @@ const montserrat = Montserrat({
   variable: '--font-montserrat' // Optional: to use as CSS variable
 })
 import Image from 'next/image'
-import supabase from '@/app/lib/supabaseClient';
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Cookies from 'js-cookie'
@@ -24,7 +23,6 @@ export default function CreateBlogPost() {
         }
     }, [])
 
-
     const newBlogPostSubmit = async (e: React.FormEvent) => {
         e.preventDefault(); // prevent form reload
         console.log("im here.")
@@ -39,6 +37,7 @@ export default function CreateBlogPost() {
                         <div className='flex flex-col'>
                             <h1 className="text-xl font-semibold text-slate-800">Create New Blog Post</h1>
                             <p className='text-xs'>Monday, 26th. May, 2025</p>
+                            <p>{doctorName} just for buile error</p>
                         </div>
                     </div>
                 </header>

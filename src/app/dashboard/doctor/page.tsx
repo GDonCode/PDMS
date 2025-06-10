@@ -6,7 +6,7 @@ import PatientMedicalForm from '@/app/components/patientMedicalForm';
 import { useRouter } from 'next/navigation'
 import Cookies from 'js-cookie'
 import supabase from '@/app/lib/supabaseClient';
-import { Calendar, Clock, User, CalendarDays, CircleChevronRight, UserRoundSearch, SlidersHorizontal } from "lucide-react";
+import { Calendar, Clock, CalendarDays, UserRoundSearch, SlidersHorizontal } from "lucide-react";
 import type { Patient } from '@/app/types/patient.ts';
 
 const montserrat = Montserrat({

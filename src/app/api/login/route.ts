@@ -14,6 +14,12 @@ const rateLimiter = new RateLimiterMemory({
   duration: 600,
 });
 
+type LoginRequestBody = {
+  email: string;
+  password: string;
+  role: string;
+};
+
 export async function POST(req: Request) {
   console.log('API /api/login hit');
   const xForwardedFor = req.headers.get('x-forwarded-for');
@@ -30,7 +36,7 @@ export async function POST(req: Request) {
   }
 
   // Safe JSON parsing
-  let body: any;
+  let body: LoginRequestBody;
   try {
     const rawBody = await req.text();
     if (!rawBody) {
