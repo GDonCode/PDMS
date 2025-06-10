@@ -6,6 +6,8 @@ import PatientMedicalForm from '@/app/components/patientMedicalForm';
 import { useRouter } from 'next/navigation'
 import Cookies from 'js-cookie'
 import supabase from '@/app/lib/supabaseClient';
+import { Calendar, Clock, User, CalendarDays, CircleChevronRight, UserRoundSearch, SlidersHorizontal } from "lucide-react";
+import type { Patient } from '@/app/types/patient.ts';
 
 const montserrat = Montserrat({
   subsets: ['latin'],
@@ -18,7 +20,7 @@ export default function DoctorDashboard() {
   const [activeSection, setActiveSection] = useState('overview')
 
 // DOCTOR OBJECT --------- DOCTOR OBJECT --------- DOCTOR OBJECT --------- DOCTOR OBJECT --------- DOCTOR OBJECT --------- DOCTOR OBJECT --------- DOCTOR OBJECT ---------
-  type Doctor = {
+  interface Doctor {
     user_id: string;
     first_name: string;
     last_name: string;
@@ -33,7 +35,7 @@ export default function DoctorDashboard() {
 // ------------------------------------------------------------------------------------------------------------------------------------------------------
 
 // APPOINTMENT OBJECT --------- APPOINTMENT OBJECT --------- APPOINTMENT OBJECT --------- APPOINTMENT OBJECT --------- APPOINTMENT OBJECT --------- APPOINTMENT OBJECT ---------
-  type Appointment = {
+  interface Appointment {
     id: string;
     appointment_title: string;
     patient_name: string;
@@ -47,26 +49,7 @@ export default function DoctorDashboard() {
 // ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 //PATIENT OBJECT --------- PATIENT OBJECT --------- PATIENT OBJECT --------- PATIENT OBJECT --------- PATIENT OBJECT --------- PATIENT OBJECT --------- PATIENT OBJECT --------- PATIENT OBJECT --------- PATIENT OBJECT --------- 
-  interface Patient {
-    user_id: string;  
-    first_name: string;
-    last_name: string;
-    date_of_birth: string;
-    sex: string;
-    phone: string;
-    age: string;
-    height: string;
-    weight: string;
-    password: string;
-    bmi: string;
-    blood_pressure: string;
-    blood_type: string;
-    resting_heart_rate: string;
-    race: string;
-    nationality: string;
-    offspring: string;
-  };
-  const [patients, setPatients] = useState<Patient[]>([]);
+  const [allPatients, setAllPatients] = useState<any[]>([]);
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 // FETCH APPOINTMENTS FROM DB --------- FETCH APPOINTMENTS FROM DB --------- FETCH APPOINTMENTS FROM DB --------- FETCH APPOINTMENTS FROM DB --------- FETCH APPOINTMENTS FROM DB --------- FETCH APPOINTMENTS FROM DB --------- FETCH APPOINTMENTS FROM DB --------- FETCH APPOINTMENTS FROM DB ---------
@@ -145,9 +128,17 @@ export default function DoctorDashboard() {
         });
         const data = await res.json();
 
-        if (!res.ok) throw new Error(data.error || 'Failed to fetch doctor');
+        
+      if (!res.ok) {
+        if (res.status === 401) {
+          // Redirect to login or show a message
+          window.location.href = '/login';
+        } else {
+          throw new Error(data.error || 'Failed to fetch doctor');
+        }
+      }
 
-        setDoctor(data.doctor);
+        setDoctor(data);
       } catch (err) {
         console.error('Error fetching doctor:', err);
       }
@@ -168,7 +159,7 @@ export default function DoctorDashboard() {
       if (error) {
         setError(error.message);
       } else {
-        setPatients(data);
+        setAllPatients(data);
       }
     };
 
@@ -249,7 +240,7 @@ export default function DoctorDashboard() {
       }
   };
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+
 
 //DELETE ACCOUNT --------- DELETE ACCOUNT --------- DELETE ACCOUNT --------- DELETE ACCOUNT--------- DELETE ACCOUNT--------- DELETE ACCOUNT--------- DELETE ACCOUNT--------- DELETE ACCOUNT--------- DELETE ACCOUNT--------- DELETE ACCOUNT 
   const [loading, setLoading] = useState(false);
@@ -291,23 +282,42 @@ export default function DoctorDashboard() {
 
 // SHOW UPCOMING CONFIRMED APPOINTMENTS ON OVERVIEW ---------- SHOW UPCOMING CONFIRMED APPOINTMENTS ON OVERVIEW ---------- SHOW UPCOMING CONFIRMED APPOINTMENTS ON OVERVIEW ---------- SHOW UPCOMING CONFIRMED APPOINTMENTS ON OVERVIEW ---------- SHOW UPCOMING CONFIRMED APPOINTMENTS ON OVERVIEW ---------- 
   const [upcoming, setUpcoming] = useState<Appointment[]>([]);
-
   useEffect(() => {
-    const fetchAppointments = async () => {
-      try {
-        const res = await fetch('/api/upcomingAppts')
-        const data = await res.json()
+    if (!doctor || activeSection !== 'overview') return;
 
-        if (!res.ok) throw new Error(data.error || 'Fetch failed')
+    const fetchConfirmedAppointments = async () => {
+      const loggedInDoctorName = `${doctor.first_name ?? ''} ${doctor.last_name ?? ''}`.trim();
 
-        setUpcoming(data)
-      } catch (err) {
-        console.error('Error loading appointments:', err)
+      const now = new Date();
+      const oneWeekFromNow = new Date();
+      oneWeekFromNow.setDate(now.getDate() + 7);
+
+      const formattedNow = now.toISOString().split('T')[0];
+      const formattedNextWeek = oneWeekFromNow.toISOString().split('T')[0];
+
+      const { data, error } = await supabase
+        .from('appointments')
+        .select('*')
+        .gte('appointment_date', formattedNow)
+        .lte('appointment_date', formattedNextWeek)
+        .eq('appointment_status', 'confirmed')
+        .eq('doctor_name', loggedInDoctorName)
+        .order('appointment_date', { ascending: true });
+
+      if (error) {
+        console.error('Error loading appointments:', error);
+        return;
       }
-    }
 
-    fetchAppointments()
-  }, [])
+      setUpcoming(data);
+      console.log('Upcoming appointments:', data);
+    };
+
+    fetchConfirmedAppointments();
+  }, [activeSection, doctor]);
+
+
+
 
 // RANDOM HEALTH TIP OF THE DAY --------- RANDOM HEALTH TIP OF THE DAY --------- RANDOM HEALTH TIP OF THE DAY --------- RANDOM HEALTH TIP OF THE DAY --------- RANDOM HEALTH TIP OF THE DAY --------- RANDOM HEALTH TIP OF THE DAY --------- RANDOM HEALTH TIP OF THE DAY ---------
   const [selectedTip, setSelectedTip] = useState('')  
@@ -329,7 +339,7 @@ export default function DoctorDashboard() {
 
     
 //BLOG POST OBJECT -------- BLOG POST OBJECT -------- BLOG POST OBJECT -------- BLOG POST OBJECT -------- BLOG POST OBJECT -------- BLOG POST OBJECT -------- BLOG POST OBJECT --------
-  type BlogPost = {
+interface BlogPost {
     id: number
     blog_title: string
     blog_author: string
@@ -385,10 +395,69 @@ const [formattedDate, setFormattedDate] = useState('')
     fetchDate()
   }, [])
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+// SEARCH AND FILTER FUNCTIONALITY --------- SEARCH AND FILTER FUNCTIONALITY --------- SEARCH AND FILTER FUNCTIONALITY --------- SEARCH AND FILTER  FUNCTIONALITY --------- SEARCH AND FILTER FUNCTIONALITY ---------
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sexFilter, setSexFilter] = useState('');
+  const [minAge, setMinAge] = useState('');
+  const [maxAge, setMaxAge] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
+
+  const filteredPatients = allPatients.filter((p) => {
+    const fullName = `${p.first_name} ${p.last_name}`.toLowerCase();
+    const matchesName = fullName.includes(searchTerm.toLowerCase());
+    const matchesSex = sexFilter ? p.sex === sexFilter : true;
+
+    const age = parseInt(p.age, 10);
+    const min = minAge ? parseInt(minAge, 10) : null;
+    const max = maxAge ? parseInt(maxAge, 10) : null;
+
+    const matchesAge =
+      (!min || age >= min) &&
+      (!max || age <= max);
+
+    return matchesName && matchesSex && matchesAge;
+  });
+
+
+  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+  const handleRecordsSubmit = async () => {
+    if (!selectedPatient || !selectedPatient.user_id) return;
+
+    const { user_id, ...updateFields } = selectedPatient;
+
+    const { error: updateError } = await supabase
+      .from('patients')
+      .update(updateFields)
+      .eq('user_id', user_id);
+
+    if (updateError) {
+      console.error('Update failed:', updateError.message);
+      alert('Failed to update patient');
+      return;
+    }
+
+    // ✅ Fetch updated list
+    const { data: refreshedPatients, error: fetchError } = await supabase
+      .from('patients')
+      .select('*');
+
+    if (fetchError) {
+      console.error('Failed to refresh patients:', fetchError.message);
+      alert('Update succeeded, but refresh failed');
+    } else {
+      setAllPatients(refreshedPatients); // Update the table data
+      alert('Patient updated successfully');
+    }
+
+    setSelectedPatient(null); // Go back to the table
+  };
+
+// -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   return (
     <div className="font-sans min-h-screen bg-gray-50">
       <header className={`${montserrat.className}`}>
-        <div className="min-w-full h-16 bg-white shadow-lg flex items-center pl-4 gap-4">
+        <div className="min-w-full h-16 bg-white shadow-lg flex items-center pl-10 gap-4">
           <Image 
             src="/logo.png"
             alt="Logo"
@@ -400,17 +469,11 @@ const [formattedDate, setFormattedDate] = useState('')
             <p className='text-xs'>{formattedDate}</p>
           </div>
         </div>
-      </header>
-
-      <main className={`${montserrat.className} gradient-background min-h-screen p-3`}>
-        <div className='flex flex-col gap-4 p-2'>
-
-          
-          {/* Sidebar NAV*/}
-          <div className='bg-white shadow-md rounded-lg p-4'>
+        {/*NAV*/}
+          <div className='bg-white shadow-md rounded-lg pb-4'>
             <nav>
               <ul className="gap-12 md:gap-24 flex justify-center">
-                <li className='flex gap-2 items-center hover:bg-emerald-100 hover:shadow-md p-2 rounded-md cursor-pointer'
+                <li  className={`flex gap-2 items-center p-2 cursor-pointer ${activeSection === 'overview' ? 'border-b-4 border-[#3ca444]' : ''}`}
                   onClick={() => setActiveSection('overview')}>
                     <Image 
                       src="/grid.svg"
@@ -420,7 +483,7 @@ const [formattedDate, setFormattedDate] = useState('')
                     />
                   <span className='hidden md:block text-lg font-semibold'>Overview</span>
                 </li>
-                <li className='flex gap-2 items-center hover:bg-emerald-100 hover:shadow-md p-2 rounded-md cursor-pointer'
+                <li className={`flex gap-2 items-center p-2 cursor-pointer ${activeSection === 'appointments' ? 'border-b-4 border-[#3ca444]' : ''}`}
                   onClick={() => setActiveSection('appointments')}>
                   <Image 
                     src="/calendar.svg"
@@ -430,7 +493,7 @@ const [formattedDate, setFormattedDate] = useState('')
                   />
                   <span className="hidden md:block text-lg font-semibold">Appointments</span>
                 </li>
-                <li className='flex gap-2 items-center hover:bg-emerald-100 hover:shadow-md p-2 rounded-md cursor-pointer'
+                <li className={`flex gap-2 items-center p-2 cursor-pointer ${activeSection === 'patientRecords' ? 'border-b-4 border-[#3ca444]' : ''}`}
                   onClick={() => setActiveSection('patientRecords')}>
                   <Image 
                     src="/folder-plus.svg"
@@ -440,7 +503,7 @@ const [formattedDate, setFormattedDate] = useState('')
                   />
                   <span className="hidden md:block text-lg font-semibold">Patient Records</span>
                 </li>
-                <li className='flex gap-2 items-center hover:bg-emerald-100 hover:shadow-md p-2 rounded-md cursor-pointer'
+                <li className={`flex gap-2 items-center p-2 cursor-pointer ${activeSection === 'profile' ? 'border-b-4 border-[#3ca444]' : ''}`}
                   onClick={() => setActiveSection('profile')}>
                   <Image 
                     src="/user.svg"
@@ -453,6 +516,10 @@ const [formattedDate, setFormattedDate] = useState('')
               </ul>
             </nav>
           </div>
+      </header>
+
+      <main className={`${montserrat.className} gradient-background min-h-screen p-3`}>
+        <div className='flex flex-col gap-4 p-2'>
 
           {/* Main Content */}
           <div className='col-span-5'>
@@ -462,7 +529,7 @@ const [formattedDate, setFormattedDate] = useState('')
             <>
               <div className='flex flex-col gap-6'>
                 <div className='bg-white shadow-md rounded-lg p-4 md:p-6'>
-                  <div className='flex w-fit items-center gap-3 mb-6'>
+                  <div className='flex w-fit items-center gap-3 mb-4'>
                     <Image 
                       src="/logo.png"
                       alt="Logo"
@@ -472,21 +539,62 @@ const [formattedDate, setFormattedDate] = useState('')
                     <h2 className='text-lg font-semibold'>Welcome, Dr. <span id="doctorName">{doctor?.last_name || 'User'}</span>.</h2>
                   </div>
                   <div className='mb-6'>
-                    <p className='underline font-semibold'>Upcoming Appointments</p>
+                    <p className='underline font-semibold mb-3'>Upcoming Appointments</p>
                     <div>
                       {upcoming.length > 0 ? (
-                        <ul className="mt-2 space-y-2">
+                        <div className="space-y-4">
                           {upcoming.map(appt => (
-                            <li key={appt.id} className="text-sm border p-2 rounded-md">
-                              <strong>{appt.appointment_title}</strong> with {appt.patient_name} on{" "}
-                              <strong>{new Date(appt.appointment_date + "T00:00:00").toLocaleDateString('en-US', {
-                                weekday: 'short', month: 'short', day: 'numeric'
-                              })}</strong> at <strong>{appt.appointment_time.slice(0, 5)}</strong>
-                            </li>
+                            <div key={appt.id} className="group bg-gradient-to-r from-gray-50 to-white p-2 border border-gray-200 rounded-lg hover:shadow-md hover:border-blue-200 transition-all duration-200 cursor-pointer">
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-3">
+                                    <h4 className="font-semibold text-gray-900 group-hover:text-blue-700 transition-colors">
+                                      {appt.appointment_title} <br></br><span className='font-medium text-sm'>with</span> {appt.patient_name}
+                                    </h4>
+                                  </div>
+                                  
+                                  <div className="flex items-center gap-4 text-sm">
+                                    <div className="flex items-center gap-1.5">
+                                      <Calendar className="w-4 h-4 stroke-[#3ca444]" stroke="currentColor" />
+                                      <span className="font-medium">
+                                        {new Date(appt.appointment_date + "T00:00:00").toLocaleDateString('en-US', {
+                                          weekday: 'short', 
+                                          month: 'short', 
+                                          day: 'numeric'
+                                        })}
+                                      </span>
+                                    </div>
+                                    
+                                    <div className="flex items-center gap-1.5">
+                                      <Clock className="w-4 h-4 stroke-[#3ca444]" stroke="currentColor" />
+                                      <span className="font-medium">{appt.appointment_time.slice(0, 5)}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                <div className="ml-4 transition-opacity">
+                                  <button className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                    </svg>
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
                           ))}
-                        </ul>
+                        </div>
                       ) : (
-                        <p className="text-gray-500">no appointments scheduled</p>
+                        <div className="text-center py-12">
+                          <div className="mx-auto w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mb-4">
+                            <Calendar className="w-8 h-8 text-white" />
+                          </div>
+                          <h4 className="text-lg font-medium text-gray-900 mb-2">No appointments scheduled</h4>
+                          <p className="text-gray-500 text-sm">Your confirmed upcoming appointments will appear here</p>
+                            <button className="mt-4 inline-flex items-center px-4 py-2 bg-[#3ca444] text-white text-sm font-medium rounded-lg transition-colors" onClick={() => setActiveSection('appointments')}>
+                            <CalendarDays className="w-4 h-4 mr-2" />
+                            Schedule Appointment
+                          </button>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -494,25 +602,25 @@ const [formattedDate, setFormattedDate] = useState('')
 
                 {/* HEALTH TIP PLUS SCROLL CTA */}
                 <div className='bg-white shadow-md rounded-lg p-4 md:p-6'>
-                                <div className='flex flex-col gap-3'>
-                                  <div className='flex items-center gap-2 border-b-4 border-[#008044]'>
-                                    <Image 
-                                      src="/info.svg"
-                                      width={16}
-                                      height={16}
-                                      alt="Information Icon"
-                                    />
-                                    <p className='font-[550] text-lg'>{selectedTip}</p>
-                                  </div>
-                                  <div>
-                                    {selectedTip}
-                                  </div>
-                                </div>
+                  <div className='flex flex-col gap-3'>
+                    <div className='flex items-center gap-2 border-b-4 border-[#3ca444]'>
+                      <Image 
+                        src="/info.svg"
+                        width={16}
+                        height={16}
+                        alt="Information Icon"
+                      />
+                      <p className='font-[550] text-lg'>Health Tip of the Day</p>
+                    </div>
+                    <div>
+                      {selectedTip}
+                    </div>
+                  </div>
                 </div>
 
                 {/* BLOG */}
                 <div className='bg-white shadow=md rounded-lg p-4 md:p-6 flex flex-col gap-3'>
-                  <div className='flex items-center gap-2 border-b-4 border-[#008044]'>
+                  <div className='flex items-center gap-2 border-b-4 border-[#3ca444]'>
                     <Image 
                       src="/info.svg"
                       width={16}
@@ -520,8 +628,8 @@ const [formattedDate, setFormattedDate] = useState('')
                       alt="Information Icon"
                     />
                     <p className='font-[550] text-lg'>Blog Posts</p>
+                    
                   </div>
-                  <button type='submit' onClick={prepNewBlogPost} className='bg-[#008044] text-white p-2 rounded-md w-fit'>Create New Post</button>
                 
                 
                   {posts.map((post) => (
@@ -560,7 +668,7 @@ const [formattedDate, setFormattedDate] = useState('')
                     />
                     <h2 className='text-xl font-semibold'>Your Appointments</h2>
                   </div>
-                  <button className='bg-[#3ca444] text-white p-2 rounded-md font-semibold cursor-pointer md:px-4 text-sm' onClick={prepNewAppt}>Create New Appointment</button>
+                  <button className='bg-[#008044] text-white p-2 rounded-md font-semibold cursor-pointer md:px-4 text-sm' onClick={prepNewAppt}>Create New Appointment</button>
                 </div>
                 {/* APPOINTMENTS FILTERS */} 
                 <div className='flex gap-6'>
@@ -789,72 +897,97 @@ const [formattedDate, setFormattedDate] = useState('')
                 </div>
 
                 {selectedPatient ? (
-                  <>
-                    <PatientMedicalForm
-                      patient={selectedPatient}
-                      setPatient={setSelectedPatient}
-                      handleSubmit={async () => {
-                        if (!selectedPatient) return;
-                        console.log(selectedPatient);
+                <>
+                  <button
+                    onClick={() => setSelectedPatient(null)}
+                    className="mb-4 px-4 py-2 bg-[#3ca444] text-white rounded hover:bg-[#33953a] focus:outline-none focus:ring-2 focus:ring-[#3ca444]"
+                  >
+                    ← Back to Table
+                  </button>
 
-                        const res = await fetch('/api/update-patient', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify(selectedPatient),
-                        });
-
-                        const data = await res.json();
-                        if (!res.ok) {
-                          throw new Error(data.error || 'Failed to update patient');
-                        }
-
-                        alert('Patient updated successfully');
-                      }}
-                    />
-
-                    <button
-                      onClick={() => setSelectedPatient(null)}
-                      className="mt-6 text-red-600 underline"
-                    >
-                      ← Back to patient list
-                    </button>
-                  </>
+                  <PatientMedicalForm
+                    patient={selectedPatient}
+                    setPatient={setSelectedPatient}
+                    handleSubmit={handleRecordsSubmit}
+                  />
+                </>
                 ) : (
-                  // Loop over patients
-                  <>
-                    {patients.map((patient) => (
-                      <div
-                        key={patient.user_id}
-                        className="flex items-center justify-between mb-4 cursor-pointer bg-gray-100 p-2 rounded-md"
-                        onClick={() => setSelectedPatient(patient)}
+                <>
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-4">
+                    {/* Search input */}
+                    <div className="relative w-full md:w-1/3">
+                      <UserRoundSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+                      <input type="text" placeholder="Search by name..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2 rounded border border-gray-500 focus:outline-none focus:ring-2 focus:ring-[#3ca444]"/>
+                    </div>
+
+                    {/* Filter toggle button */}
+                    <button onClick={() => setShowFilters(!showFilters)} className="text-gray-500 flex items-center gap-2 px-4 py-2 rounded border hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#3ca444] transition">
+                      <SlidersHorizontal className="text-gray-500" />
+                      Filters
+                    </button>
+                  </div>
+
+                  {/* Filter options (age and gender) */}
+                  {showFilters && (
+                    <div className="mb-4 flex flex-col md:flex-row gap-4">
+                      {/* Gender Filter */}
+                      <select
+                        value={sexFilter}
+                        onChange={(e) => setSexFilter(e.target.value)}
+                        className="w-full md:w-1/4 px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-[#3ca444]"
                       >
-                        <div className='flex gap-4 items-center'>
-                          <div className='bg-emerald-100 rounded-full flex items-center justify-center h-fit p-2'>
-                            <Image
-                              src="/user.svg"
-                              alt="User Icon"
-                              width={20}
-                              height={20}
-                            />
-                          </div>
-                          <div className="flex-col">
-                            <h2 className="font-semibold">
-                              <span>{patient.first_name}</span> <span>{patient.last_name}</span>
-                            </h2>
-                            <p>
-                              <span className='text-sm'>{patient.sex}</span>, <span>{patient.age}</span> years old
-                            </p>
-                          </div>
-                        </div>
-                        <Image 
-                          src="/chevron-right.svg"
-                          alt="Chevron Icon"
-                          width={20}
-                          height={20}
+                        <option value="">All Genders</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                      </select>
+
+                      {/* Age Filter */}
+                      <div className="flex gap-2 w-full md:w-1/2">
+                        <input
+                          type="number"
+                          placeholder="Min Age"
+                          value={minAge}
+                          onChange={(e) => setMinAge(e.target.value)}
+                          className="w-1/2 px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-[#3ca444]"
+                        />
+                        <input
+                          type="number"
+                          placeholder="Max Age"
+                          value={maxAge}
+                          onChange={(e) => setMaxAge(e.target.value)}
+                          className="w-1/2 px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-[#3ca444]"
                         />
                       </div>
-                    ))}
-                  </>
+                    </div>
+                  )}
+
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
+                      <thead className="bg-[#3ca444] text-left text-sm font-semibold text-white">
+                        <tr>
+                          <th className="py-3 px-4">Name</th>
+                          <th className="py-3 px-4">Gender</th>
+                          <th className="py-3 px-4">Age</th>
+                          <th className="py-3 px-4">Phone</th>
+                          <th className="py-3 px-4">Last Visit</th>
+                        </tr>
+                      </thead>
+                      <tbody className="text-lg text-gray-800">
+                        {filteredPatients.map((patient, index) => (
+                          <tr key={index} className={`${index % 2 === 0 ? 'bg-white' : 'bg-gray-100'} hover:bg-gray-200 transition`} onClick={() => setSelectedPatient(patient)}>
+                            <td className="py-3 px-4 font-medium">
+                              {patient.first_name} {patient.last_name}
+                            </td>
+                            <td className="py-3 px-4">{patient.sex}</td>
+                            <td className="py-3 px-4">{patient.age}</td>
+                            <td className="py-3 px-4">{patient.phone || '—'}</td>
+                            <td className="py-3 px-4">{patient.last_visit ? new Date(patient.last_visit).toLocaleDateString() : '—'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
                 )}
               </div>
             </>

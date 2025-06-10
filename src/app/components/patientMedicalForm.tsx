@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 import { Dispatch, SetStateAction } from 'react';
-import { Patient } from '@/app/types/patient';
+import type { Patient } from '@/app/types/patient.ts';
 
 interface PatientMedicalFormProps {
   patient: Patient;
@@ -19,7 +19,7 @@ const PatientMedicalForm: React.FC<PatientMedicalFormProps> = ({
       {/* Personal Information */}
       <section className="flex flex-col mb-6">
         <h3 className="text-xl font-semibold">Personal Information</h3>
-        <div className="min-h-1 bg-[#008044]"></div>
+        <div className="min-h-1 bg-[#3ca444]"></div>
       </section>
 
       <div className="grid grid-cols-2 gap-12">
@@ -43,7 +43,7 @@ const PatientMedicalForm: React.FC<PatientMedicalFormProps> = ({
       {/* Biometrics Section */}
       <section className="flex flex-col mb-6 mt-12">
         <h3 className="text-xl font-semibold">Biometrics and Physical Data</h3>
-        <div className="min-h-1 bg-[#008044]"></div>
+        <div className="min-h-1 bg-[#3ca444]"></div>
       </section>
 
       <div className="grid grid-cols-2 gap-12">

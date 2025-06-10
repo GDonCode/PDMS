@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import Cookies from 'js-cookie';
 import { useRouter } from 'next/navigation'
 import supabase from '@/app/lib/supabaseClient';
+import { Calendar, Clock, User, CalendarDays, CircleChevronRight, UserRoundSearch, SlidersHorizontal, LucideDivideCircle } from "lucide-react";
 const montserrat = Montserrat({
   subsets: ['latin'],
   weight: ['400', '600'], // Add weights as needed
@@ -38,6 +39,7 @@ export default function PatientDashboard() {
     offspring: string;
   };
   const [patient, setPatient] = useState<Patient | null>(null);
+
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 //APPOINTMENT OBJECT -------- APPOINTMENT OBJECT -------- APPOINTMENT OBJECT -------- APPOINTMENT OBJECT -------- APPOINTMENT OBJECT -------- APPOINTMENT OBJECT -------- APPOINTMENT OBJECT -------- APPOINTMENT OBJECT -------- APPOINTMENT OBJECT -------- 
@@ -90,7 +92,14 @@ export default function PatientDashboard() {
         });
         const data = await res.json();
 
-        if (!res.ok) throw new Error(data.error || 'Failed to fetch patient');
+        if (!res.ok) {
+        if (res.status === 401) {
+          // Redirect to login or show a message
+          window.location.href = '/login';
+        } else {
+          throw new Error(data.error || 'Failed to fetch patient');
+        }
+      }
 
         setPatient(data.patient);
       } catch (err: unknown) {
@@ -274,22 +283,39 @@ export default function PatientDashboard() {
 
 // SHOW UPCOMING CONFIRMED APPOINTMENTS ON OVERVIEW ---------- SHOW UPCOMING CONFIRMED APPOINTMENTS ON OVERVIEW ---------- SHOW UPCOMING CONFIRMED APPOINTMENTS ON OVERVIEW ---------- SHOW UPCOMING CONFIRMED APPOINTMENTS ON OVERVIEW ---------- SHOW UPCOMING CONFIRMED APPOINTMENTS ON OVERVIEW ---------- SHOW UPCOMING CONFIRMED APPOINTMENTS ON OVERVIEW ---------- SHOW UPCOMING CONFIRMED APPOINTMENTS ON OVERVIEW ----------
   const [upcoming, setUpcoming] = useState<Appointment[]>([]);
-   useEffect(() => {
-    const fetchAppointments = async () => {
-      try {
-        const res = await fetch('/api/upcomingAppts')
-        const data = await res.json()
-
-        if (!res.ok) throw new Error(data.error || 'Fetch failed')
-
-        setUpcoming(data)
-      } catch (err) {
-        console.error('Error loading appointments:', err)
-      }
-    }
-
-    fetchAppointments()
-  }, [])
+    useEffect(() => {
+      if (!patient || activeSection !== 'overview') return;
+  
+      const fetchConfirmedAppointments = async () => {
+        const loggedInPatientName = `${patient.first_name ?? ''} ${patient.last_name ?? ''}`.trim();
+  
+        const now = new Date();
+        const oneWeekFromNow = new Date();
+        oneWeekFromNow.setDate(now.getDate() + 7);
+  
+        const formattedNow = now.toISOString().split('T')[0];
+        const formattedNextWeek = oneWeekFromNow.toISOString().split('T')[0];
+  
+        const { data, error } = await supabase
+          .from('appointments')
+          .select('*')
+          .gte('appointment_date', formattedNow)
+          .lte('appointment_date', formattedNextWeek)
+          .eq('appointment_status', 'confirmed')
+          .eq('patient_name', loggedInPatientName)
+          .order('appointment_date', { ascending: true });
+  
+        if (error) {
+          console.error('Error loading appointments:', error);
+          return;
+        }
+  
+        setUpcoming(data);
+        console.log('Upcoming appointments:', data);
+      };
+  
+      fetchConfirmedAppointments();
+    }, [activeSection, patient]);
 // --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   
 
@@ -364,49 +390,45 @@ export default function PatientDashboard() {
         <div className='flex flex-col gap-4 w-full'>
 
           
-          {/* Sidebar NAV*/}
+          {/* NAV*/}
           <div className='bg-white shadow-md rounded-lg p-4'>
             <nav>
-              <ul className="gap-2 flex justify-center gap-12 md:justify-center md:gap-4">
-                <li className='flex items-center hover:bg-emerald-100 hover:shadow-md p-2 rounded-md cursor-pointer'
-                  onClick={() => setActiveSection('overview')}>
-                    <Image 
-                      src="/grid.svg"
-                      alt="Overview Icon"
-                      width={24}
-                      height={24}
-                    />
-                  <a href="#" className="md:block md:px-4 md:py-2 text-lg font-semibold"><span className="hidden md:block">Overview</span></a>
+              <ul className="gap-12 md:gap-24 flex justify-center">
+                <li  className={`flex gap-2 items-center p-2 cursor-pointer ${activeSection === 'overview' ? 'border-b-4 border-[#3ca444]' : ''}`} onClick={() => setActiveSection('overview')}>
+                  <Image 
+                    src="/grid.svg"
+                    alt="Overview Icon"
+                    width={24}
+                    height={24}
+                  />
+                  <span className='hidden md:block text-lg font-semibold'>Overview</span>
                 </li>
-                <li className='flex items-center hover:bg-emerald-100 hover:shadow-md p-2 rounded-md cursor-pointer'
-                  onClick={() => setActiveSection('appointments')}>
+                <li className={`flex gap-2 items-center p-2 cursor-pointer ${activeSection === 'appointments' ? 'border-b-4 border-[#3ca444]' : ''}`} onClick={() => setActiveSection('appointments')}>
                   <Image 
                     src="/calendar.svg"
                     alt="Appointments Icon"
                     width={24}
                     height={24}
                   />
-                  <a href="#" className="md:block md:px-4 md:py-2 rounded-md text-lg font-semibold"><span className="hidden md:block">Appointments</span></a>
+                  <span className="hidden md:block text-lg font-semibold">Appointments</span>
                 </li>
-                <li className='flex items-center hover:bg-emerald-100 hover:shadow-md p-2 rounded-md cursor-pointer'
-                  onClick={() => setActiveSection('medicalRecords')}>
+                <li className={`flex gap-2 items-center p-2 cursor-pointer ${activeSection === 'medicalRecords' ? 'border-b-4 border-[#3ca444]' : ''}`} onClick={() => setActiveSection('medicalRecords')}>
                   <Image 
                     src="/folder-plus.svg"
-                    alt="Mdeical Records Icon"
+                    alt="Medical Records Icon"
                     width={24}
                     height={24}
                   />
-                  <a href="#" className="md:block md:px-4 md:py-2 rounded-md text-lg font-semibold"><span className="hidden md:block">Medical Records</span></a>
+                  <span className="hidden md:block text-lg font-semibold">Medical Records</span>
                 </li>
-                <li className='flex items-center hover:bg-emerald-100 hover:shadow-md p-2 rounded-md cursor-pointer'
-                  onClick={() => setActiveSection('profile')}>
+                <li className={`flex gap-2 items-center p-2 cursor-pointer ${activeSection === 'profile' ? 'border-b-4 border-[#3ca444]' : ''}`} onClick={() => setActiveSection('profile')}>
                   <Image 
                     src="/user.svg"
                     alt="Profile Icon"
                     width={24}
                     height={24}
                   />
-                  <a href="#" className="md:block md:px-4 md:py-2 rounded-md text-lg font-semibold"><span className="hidden md:block">Profile</span></a>
+                  <span className="hidden md:block text-lg font-semibold">Profile</span>
                 </li> 
               </ul>
             </nav>
@@ -417,94 +439,9 @@ export default function PatientDashboard() {
 
             {/* OVERVIEW SECTION */} 
             {activeSection === 'overview' && 
-            <div className='flex flex-col gap-6'>
-              <div className='bg-white shadow-md rounded-lg p-4 md:p-6'>
-                <div className='flex w-fit items-center gap-3 mb-6'>
-                  <Image 
-                    src="/logo.png"
-                    alt="Logo"
-                    width={30}
-                    height={30}
-                  />
-                  <h2 className='text-xl font-semibold'>Welcome, <span id="patientName">{patient?.first_name || 'User'}</span>.</h2>
-                </div>
-                <div className='mb-6'>
-                  <p className='font-[550]'>Upcoming Appointments</p>
-                  <div>
-                    {upcoming.length > 0 ? (
-                      <ul className="mt-2 space-y-2">
-                        {upcoming.map(appt => (
-                          <li key={appt.id} className="text-sm border p-2 rounded-md">
-                            <strong>{appt.appointment_title}</strong> with {appt.patient_name} on{" "}
-                            {new Date(appt.appointment_date + "T00:00:00").toLocaleDateString('en-US', {
-                              weekday: 'short', month: 'short', day: 'numeric'
-                            })} at {appt.appointment_time.slice(0, 5)}
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p className="text-gray-500">no appointments scheduled</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* HEALTH TIP PLUS SCROLL CTA */}
-              <div className='bg-white shadow-md rounded-lg p-4 md:p-6'>
-                <div className='flex flex-col gap-3'>
-                  <div className='flex items-center gap-2 border-b-4 border-[#008044]'>
-                    <Image 
-                      src="/info.svg"
-                      width={16}
-                      height={16}
-                      alt="Information Icon"
-                    />
-                    <p className='font-[550] text-lg'>{selectedTip}</p>
-                  </div>
-                  <div>
-                    {selectedTip}
-                  </div>
-                </div>
-              </div>
-
-              {/* BLOG */}
-              <div className='bg-white shadow=md rounded-lg p-4 md:p-6 flex flex-col gap-3'>
-                <div className='flex items-center gap-2 border-b-4 border-[#008044]'>
-                  <Image 
-                    src="/info.svg"
-                    width={16}
-                    height={16}
-                    alt="Information Icon"
-                  />
-                  <p className='font-[550] text-lg'>Blog Posts</p>
-                </div>
-
-
-                {posts.map((post) => (
-                  <div key={post.id} className='bg-gray-100 rounded-md drop-shadow-lg p-4'>
-                    <div className='flex flex-col mb-4 gap-1'>
-                      <p className='font-[550] text-lg underline'>{post.blog_title}</p>
-                      <div className='flex justify-between'>
-                        <p className='text-sm'>
-                          by <span className='font-semibold'>{post.blog_author}</span>
-                        </p>
-                        <p className='text-sm'>{new Date(post.created_at).toLocaleDateString()}</p>
-                      </div>
-                    </div> 
-                    <div>{post.blog_preview}</div>
-                    <button className='mt-3 bg-[#008044] text-white p-2 rounded-sm'>View Post</button>
-                  </div>
-                ))}
-              </div>
-
-
-            </div>
-            }
-            
-            {/* APPOINTMENTS SECTION */}  
-            {activeSection === 'appointments' && 
-            <div className='bg-white shadow-md rounded-lg p-4 md:p-6'>
-                <div className='mb-12'>
+            <>
+              <div className='flex flex-col gap-6'>
+                <div className='bg-white shadow-md rounded-lg p-4 md:p-6'>
                   <div className='flex w-fit items-center gap-3 mb-6'>
                     <Image 
                       src="/logo.png"
@@ -512,144 +449,275 @@ export default function PatientDashboard() {
                       width={30}
                       height={30}
                     />
-                    <h2 className='text-xl font-semibold'>Your Appointments</h2>
+                    <h2 className='text-xl font-semibold'>Welcome, <span id="patientName">{patient?.first_name || 'User'}</span>.</h2>
                   </div>
-                  <button className='bg-[#3ca444] text-white p-2 rounded-md font-semibold cursor-pointer md:px-4 text-sm' onClick={prepNewAppt}>Request New Appointment</button>
+                    <div className='mb-6'>
+                      <p className='underline font-semibold mb-3'>Upcoming Appointments</p>
+                      <div>
+                        {upcoming.length > 0 ? (
+                          <div className="space-y-4">
+                            {upcoming.map(appt => (
+                              <div key={appt.id} className="group bg-gradient-to-r from-gray-50 to-white p-2 border border-gray-200 rounded-lg hover:shadow-md hover:border-blue-200 transition-all duration-200 cursor-pointer">
+                                <div className="flex items-start justify-between">
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-2 mb-3">
+                                      <h4 className="font-semibold text-gray-900 group-hover:text-blue-700 transition-colors">
+                                        {appt.appointment_title} <br></br><span className='font-medium text-sm'>with</span> Dr. {appt.doctor_name}
+                                      </h4>
+                                    </div>
+                                    
+                                    <div className="flex items-center gap-4 text-sm">
+                                      <div className="flex items-center gap-1.5">
+                                        <Calendar className="w-4 h-4 stroke-[#3ca444]" stroke="currentColor" />
+                                        <span className="font-medium">
+                                          {new Date(appt.appointment_date + "T00:00:00").toLocaleDateString('en-US', {
+                                            weekday: 'short', 
+                                            month: 'short', 
+                                            day: 'numeric'
+                                          })}
+                                        </span>
+                                      </div>
+                                      
+                                      <div className="flex items-center gap-1.5">
+                                        <Clock className="w-4 h-4 stroke-[#3ca444]" stroke="currentColor" />
+                                        <span className="font-medium">{appt.appointment_time.slice(0, 5)}</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="ml-4 transition-opacity">
+                                    <button className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                      </svg>
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-center py-12">
+                            <div className="mx-auto w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mb-4">
+                              <Calendar className="w-8 h-8 text-white" />
+                            </div>
+                            <h4 className="text-lg font-medium text-gray-900 mb-2">No appointments scheduled</h4>
+                            <p className="text-gray-500 text-sm">Your confirmed upcoming appointments will appear here</p>
+                              <button className="mt-4 inline-flex items-center px-4 py-2 bg-[#3ca444] text-white text-sm font-medium rounded-lg transition-colors" onClick={() => setActiveSection('appointments')}>
+                              <CalendarDays className="w-4 h-4 mr-2" />
+                              Schedule Appointment
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                 </div>
-                {/* APPOINTMENTS FILTERS */} 
-                <div className='flex gap-6'>
-                  <button className='bg-gray-200 rounded-lg px-3 text-sm'>All</button>
-                  <button className='bg-gray-200 rounded-lg px-3 text-sm'>Upcoming</button>
-                  <button className='bg-gray-200 rounded-lg px-3 text-sm'>Past</button>
-                </div>
-              
 
-
-              {/* APPOINTMENTS LIST */} 
-              <ul className='mt-4 flex flex-col gap-6'>
-                {appointments.map((appointment) => (
-                <li
-                  key={appointment.id}
-                  className='bg-white p-4 w-full rounded-lg shadow-md flex flex-col gap-2 md:flex-row justify-between md:items-center border-2 border-gray-200'
-                >
-                  <div>
-                    <div
-                      className='flex items-center gap-6 mb-3 md:mb-0'
-                      onClick={() => toggleExpansion(appointment.id)}
-                      style={{ cursor: 'pointer' }}
-                    >
+                {/* HEALTH TIP PLUS SCROLL CTA */}
+                <div className='bg-white shadow-md rounded-lg p-4 md:p-6'>
+                  <div className='flex flex-col gap-3'>
+                    <div className='flex items-center gap-2 border-b-4 border-[#008044]'>
                       <Image 
-                        src="/clipboard.svg"
-                        alt="Appointment Icon"
-                        width={24}
-                        height={24}
+                        src="/info.svg"
+                        width={16}
+                        height={16}
+                        alt="Information Icon"
                       />
-                                        <div className='flex w-full'>
+                      <p className='font-[550] text-lg'>{selectedTip}</p>
+                    </div>
+                    <div>
+                      {selectedTip}
+                    </div>
+                  </div>
+                </div>
+
+                {/* BLOG */}
+                <div className='bg-white shadow=md rounded-lg p-4 md:p-6 flex flex-col gap-3'>
+                  <div className='flex items-center gap-2 border-b-4 border-[#008044]'>
+                    <Image 
+                      src="/info.svg"
+                      width={16}
+                      height={16}
+                      alt="Information Icon"
+                    />
+                    <p className='font-[550] text-lg'>Blog Posts</p>
+                  </div>
+
+
+                  {posts.map((post) => (
+                    <div key={post.id} className='bg-gray-100 rounded-md drop-shadow-lg p-4'>
+                      <div className='flex flex-col mb-4 gap-1'>
+                        <p className='font-[550] text-lg underline'>{post.blog_title}</p>
+                        <div className='flex justify-between'>
+                          <p className='text-sm'>
+                            by <span className='font-semibold'>{post.blog_author}</span>
+                          </p>
+                          <p className='text-sm'>{new Date(post.created_at).toLocaleDateString()}</p>
+                        </div>
+                      </div> 
+                      <div>{post.blog_preview}</div>
+                      <button className='mt-3 bg-[#008044] text-white p-2 rounded-sm'>View Post</button>
+                    </div>
+                  ))}
+                </div>
+
+
+              </div>
+            </>
+            }
+            
+            {/* APPOINTMENTS SECTION */}  
+            {activeSection === 'appointments' && 
+            <>
+              <div className='bg-white shadow-md rounded-lg p-4 md:p-6'>
+                  <div className='mb-12'>
+                    <div className='flex w-fit items-center gap-3 mb-6'>
+                      <Image 
+                        src="/logo.png"
+                        alt="Logo"
+                        width={30}
+                        height={30}
+                      />
+                      <h2 className='text-xl font-semibold'>Your Appointments</h2>
+                    </div>
+                    <button className='bg-[#3ca444] text-white p-2 rounded-md font-semibold cursor-pointer md:px-4 text-sm' onClick={prepNewAppt}>Request New Appointment</button>
+                  </div>
+                  {/* APPOINTMENTS FILTERS */} 
+                  <div className='flex gap-6'>
+                    <button className='bg-gray-200 rounded-lg px-3 text-sm'>All</button>
+                    <button className='bg-gray-200 rounded-lg px-3 text-sm'>Upcoming</button>
+                    <button className='bg-gray-200 rounded-lg px-3 text-sm'>Past</button>
+                  </div>
+                
+
+
+                {/* APPOINTMENTS LIST */} 
+                <ul className='mt-4 flex flex-col gap-6'>
+                  {appointments.map((appointment) => (
+                  <li
+                    key={appointment.id}
+                    className='bg-white p-4 w-full rounded-lg shadow-md flex flex-col gap-2 md:flex-row justify-between md:items-center border-2 border-gray-200'
+                  >
+                    <div>
+                      <div
+                        className='flex items-center gap-6 mb-3 md:mb-0'
+                        onClick={() => toggleExpansion(appointment.id)}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        <Image 
+                          src="/clipboard.svg"
+                          alt="Appointment Icon"
+                          width={24}
+                          height={24}
+                        />
+                                          <div className='flex w-full'>
+                                            <div>
+                                              <p className='font-semibold'>{appointment.appointment_title}</p>
+                                              <p>Dr. {appointment.doctor_name}</p>
+                                            </div>
+                                            <div className="ml-auto pr-2">
+                                              <Image 
+                                                src="/chevron-down.svg" 
+                                                alt="Expand Down Arrow" 
+                                                className={`${expandedItems[appointment.id] ? "rotate-180" : ""} md:hidden`} 
+                                                width={24} 
+                                                height={24} 
+                                              />
+                                            </div>
+                                          </div>
+                                        </div>
+                  
+                                        <div className='flex flex-col md:ml-12 gap-1 md:flex-col'>
+                                          <div className='flex gap-1'>
+                                            <p className='text-sm w-fit'>
+                                              {new Date(appointment.appointment_date + "T00:00:00").toLocaleDateString('en-US', {
+                                                  weekday: 'long',
+                                                  day: 'numeric',
+                                                  month: 'short',
+                                              })}
+                                            </p>
+                                            <p className='text-sm w-fit'>
+                                              at {appointment.appointment_time.slice(0, 5)}
+                                            </p>
+                                          </div>
                                           <div>
-                                            <p className='font-semibold'>{appointment.appointment_title}</p>
-                                            <p>Dr. {appointment.doctor_name}</p>
-                                          </div>
-                                          <div className="ml-auto pr-2">
-                                            <Image 
-                                              src="/chevron-down.svg" 
-                                              alt="Expand Down Arrow" 
-                                              className={`${expandedItems[appointment.id] ? "rotate-180" : ""} md:hidden`} 
-                                              width={24} 
-                                              height={24} 
-                                            />
-                                          </div>
-                                        </div>
-                                      </div>
-                
-                                      <div className='flex flex-col md:ml-12 gap-1 md:flex-col'>
-                                        <div className='flex gap-1'>
-                                          <p className='text-sm w-fit'>
-                                            {new Date(appointment.appointment_date + "T00:00:00").toLocaleDateString('en-US', {
-                                                weekday: 'long',
-                                                day: 'numeric',
-                                                month: 'short',
-                                            })}
-                                          </p>
-                                          <p className='text-sm w-fit'>
-                                            at {appointment.appointment_time.slice(0, 5)}
-                                          </p>
-                                        </div>
-                                        <div>
-                                          <div className='md:ml-0 flex flex-col mt-6'>
-                                            {appointment.appointment_status === 'pending' && (
-                                              <p className="md:ml-0 md:mt-4 flex items-center gap-2 text-red-600">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-circle-alert-icon lucide-circle-alert blinking-alert"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
-                                                pending...
-                                              </p>
-                                            )}
-                                            {appointment.appointment_status === 'confirmed' && (
-                                              <p className="md:ml-0 md:mt-4 flex items-center gap-2 text-green-600">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-calendar-check-icon lucide-calendar-check"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="m9 16 2 2 4-4"/></svg>
-                                                confirmed.
-                                              </p>
-                                            )}
+                                            <div className='md:ml-0 flex flex-col mt-6'>
+                                              {appointment.appointment_status === 'pending' && (
+                                                <p className="md:ml-0 md:mt-4 flex items-center gap-2 text-red-600">
+                                                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-circle-alert-icon lucide-circle-alert blinking-alert"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+                                                  pending...
+                                                </p>
+                                              )}
+                                              {appointment.appointment_status === 'confirmed' && (
+                                                <p className="md:ml-0 md:mt-4 flex items-center gap-2 text-green-600">
+                                                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-calendar-check-icon lucide-calendar-check"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="m9 16 2 2 4-4"/></svg>
+                                                  confirmed.
+                                                </p>
+                                              )}
+                                            </div>
                                           </div>
                                         </div>
                                       </div>
-                                    </div>
-                
-                                    <div className={`flex gap-3 ${expandedItems[appointment.id] ? '' : 'hidden'} md:flex`}>
-                                      <div className='flex flex-col gap-3 mt-4'>
-                                        {reschedulingId === appointment.id ? (
-                                          <>
-                                          <div className='flex gap-3'>
-                                              <input
-                                                type="date"
-                                                value={rescheduleDate}
-                                                onChange={(e) => setRescheduleDate(e.target.value)}
-                                                className='border p-2 rounded-md text-sm'
-                                              />
-                                              <input
-                                                type="time"
-                                                value={rescheduleTime}
-                                                onChange={(e) => setRescheduleTime(e.target.value)}
-                                                className='border p-2 rounded-md text-sm'
-                                              />
-                                          </div>
-                                            <button
-                                              className='bg-[#3ca444] text-white p-2 rounded-md font-semibold text-sm'
-                                              onClick={() => handleUpdate(appointment.id)}
-                                            >
-                                              Update
-                                            </button>
-                                            <button
-                                              className='bg-gray-300 text-black p-2 rounded-md font-semibold text-sm'
-                                              onClick={() => setReschedulingId(null)}
-                                            >
-                                              Close
-                                            </button>
-                                          </>
-                                        ) : (
-                                          <div className='flex gap-4'>
-                                            <button
-                                              className='bg-gray-300 p-2 rounded-md font-semibold cursor-pointer text-[#008044] text-sm'
-                                              onClick={() => {
-                                                setReschedulingId(appointment.id);
-                                                setRescheduleDate(appointment.appointment_date.slice(0, 10)); // assumes 'YYYY-MM-DD'
-                                                setRescheduleTime(appointment.appointment_time);
-                                              }}
-                                            >
-                                              Reschedule
-                                            </button>
-                                            <button
-                                              className='bg-red-500 p-2 rounded-md font-semibold cursor-pointer text-white text-sm'
-                                              onClick={() => ApptDelete(appointment.id)}
-                                            >
-                                              Delete
-                                            </button>
-                                          </div>
-                                        )}
+                  
+                                      <div className={`flex gap-3 ${expandedItems[appointment.id] ? '' : 'hidden'} md:flex`}>
+                                        <div className='flex flex-col gap-3 mt-4'>
+                                          {reschedulingId === appointment.id ? (
+                                            <>
+                                            <div className='flex gap-3'>
+                                                <input
+                                                  type="date"
+                                                  value={rescheduleDate}
+                                                  onChange={(e) => setRescheduleDate(e.target.value)}
+                                                  className='border p-2 rounded-md text-sm'
+                                                />
+                                                <input
+                                                  type="time"
+                                                  value={rescheduleTime}
+                                                  onChange={(e) => setRescheduleTime(e.target.value)}
+                                                  className='border p-2 rounded-md text-sm'
+                                                />
+                                            </div>
+                                              <button
+                                                className='bg-[#3ca444] text-white p-2 rounded-md font-semibold text-sm'
+                                                onClick={() => handleUpdate(appointment.id)}
+                                              >
+                                                Update
+                                              </button>
+                                              <button
+                                                className='bg-gray-300 text-black p-2 rounded-md font-semibold text-sm'
+                                                onClick={() => setReschedulingId(null)}
+                                              >
+                                                Close
+                                              </button>
+                                            </>
+                                          ) : (
+                                            <div className='flex gap-4'>
+                                              <button
+                                                className='bg-gray-300 p-2 rounded-md font-semibold cursor-pointer text-[#008044] text-sm'
+                                                onClick={() => {
+                                                  setReschedulingId(appointment.id);
+                                                  setRescheduleDate(appointment.appointment_date.slice(0, 10)); // assumes 'YYYY-MM-DD'
+                                                  setRescheduleTime(appointment.appointment_time);
+                                                }}
+                                              >
+                                                Reschedule
+                                              </button>
+                                              <button
+                                                className='bg-red-500 p-2 rounded-md font-semibold cursor-pointer text-white text-sm'
+                                                onClick={() => ApptDelete(appointment.id)}
+                                              >
+                                                Delete
+                                              </button>
+                                            </div>
+                                          )}
+                                        </div>
                                       </div>
-                                    </div>
-                                  </li>
-                                ))}
-              </ul>
-            </div>}
+                                    </li>
+                                  ))}
+                </ul>
+              </div>
+            </>
+            }
 
             {/* PROFILE SECTION */}
             {activeSection === 'profile' &&
@@ -665,8 +733,7 @@ export default function PatientDashboard() {
 
             {/* MEDICAL RECORDS SECTION */}
             {activeSection === 'medicalRecords' && 
-            <div>
-
+            <>
               <div className='bg-white shadow-md rounded-md p-4 md:p-6 w-full mb-6'>
                 <div className='flex gap-3 mb-8'>
                   <Image 
@@ -972,12 +1039,12 @@ export default function PatientDashboard() {
 
 
               </div>
-            </div>
+            </>
             }
 
             {/* MESSAGING SECTION */}
             {activeSection === 'messaging' && 
-              <div></div>
+              <></>
             }
 
             {/* SETTINGS SECTION */}

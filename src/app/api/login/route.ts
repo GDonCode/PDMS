@@ -15,11 +15,12 @@ const rateLimiter = new RateLimiterMemory({
 });
 
 export async function POST(req: Request) {
+  console.log('API /api/login hit');
   const xForwardedFor = req.headers.get('x-forwarded-for');
   const ip = xForwardedFor ? xForwardedFor.split(',')[0].trim() : 'unknown';
 
   try {
-    // Consume 1 point for this IP
+    // Rate limit: 5 attempts per 10 minutes
     await rateLimiter.consume(ip);
   } catch {
     return NextResponse.json(
@@ -28,7 +29,18 @@ export async function POST(req: Request) {
     );
   }
 
-  const body = await req.json();
+  // Safe JSON parsing
+  let body: any;
+  try {
+    const rawBody = await req.text();
+    if (!rawBody) {
+      return NextResponse.json({ error: 'Request body is empty' }, { status: 400 });
+    }
+    body = JSON.parse(rawBody);
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON format' }, { status: 400 });
+  }
+
   const { email, password, role } = body;
 
   if (!email || !password || !role) {
@@ -58,7 +70,10 @@ export async function POST(req: Request) {
   }
 
   // Set cookie and return success
-  const response = NextResponse.json({ message: 'Login Successful', role: user.role }, { status: 200 });
+  const response = NextResponse.json(
+    { message: 'Login Successful', role: user.role },
+    { status: 200 }
+  );
 
   response.cookies.set('user_email', email, {
     httpOnly: true,

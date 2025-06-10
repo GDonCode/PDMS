@@ -35,5 +35,5 @@ export async function GET() {
     return NextResponse.json({ error: 'Doctor not found' }, { status: 404 });
   }
 
-  return NextResponse.json({ doctor });
+  return NextResponse.json(doctor);
 }

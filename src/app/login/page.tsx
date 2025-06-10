@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { Montserrat } from 'next/font/google'
@@ -14,6 +14,16 @@ const montserrat = Montserrat({
 
 export default function Login() {
   const router = useRouter()
+
+
+  useEffect(() => {
+    router.prefetch('/dashboard/doctor')
+  }, [])
+  useEffect(() => {
+    router.prefetch('/dashboard/patient')
+  }, [])
+
+
   const [activeTab, setActiveTab] = useState<'patient' | 'doctor'>('patient')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -24,7 +34,8 @@ export default function Login() {
   const [doctorEmail, setDoctorEmail] = useState('')
 
   
-  const patientLogin= async () => {
+  const patientLogin= async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     setIsLoading(true);
     const errorMessage = document.getElementById("errorMessage")
     try {
@@ -53,7 +64,8 @@ export default function Login() {
   }
   
 
-  const doctorLogin= async () => {
+  const doctorLogin= async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     setIsLoading(true);
     try {
       const res = await fetch('/api/login', {
@@ -132,18 +144,27 @@ export default function Login() {
             )}
             
             {activeTab === 'patient' && (
-              <form className="space-y-6 w-full">
+              <form className="space-y-6 w-full" onSubmit={patientLogin} >
                 <div>
                   <label className="block text-sm font-medium">Email</label>
-                  <input type="email" className="w-full border border-slate-300 text-black p-3 rounded-lg focus:ring focus:ring-black focus:border-black outline-none transition-all" value={patientEmail} onChange={(e) => setPatientEmail(e.target.value)} />
+                  <input type="email" className="w-full border border-slate-300 text-black p-3 rounded-lg focus:ring focus:ring-black focus:border-black outline-none transition-all" value={patientEmail} onChange={(e) => setPatientEmail(e.target.value)} disabled={isLoading}/>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium">Password</label>
-                  <input type="password" className="w-full border border-slate-300 text-black p-3 rounded-lg focus:ring focus:ring-black focus:border-black outline-none transition-all" value={patientPassword} onChange={(e) => setPatientPassword(e.target.value)} />
+                  <input type="password" className="w-full border border-slate-300 text-black p-3 rounded-lg focus:ring focus:ring-black focus:border-black outline-none transition-all" value={patientPassword} onChange={(e) => setPatientPassword(e.target.value)} disabled={isLoading}/>
                 </div>
 
-                <button type="button" className={isLoading ? 'bg-[#2f701e] w-full py-3 rounded-lg font-medium text-white transition-all' : 'w-full py-3 rounded-lg font-medium bg-[#45b030] text-white transition-all'} onClick={patientLogin} disabled={isLoading}>
+                <button
+                  type="submit"
+                  className={isLoading
+                    ? 'bg-[#378d27] w-full py-3 rounded-lg font-medium text-white flex items-center justify-center gap-2 transition-all'
+                    : 'w-full py-3 rounded-lg font-medium bg-[#45b030] text-white transition-all'}
+                  disabled={isLoading}
+                >
+                  {isLoading && (
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+                  )}
                   {isLoading ? 'Logging in...' : 'Login'}
                 </button>
                 <button type="button" className="w-full mx-auto py-3 px-5 rounded-lg font-medium bg-white border transition-all" onClick={() => router.push('/register')}>
@@ -153,7 +174,7 @@ export default function Login() {
             )}
 
             {activeTab === 'doctor' && (
-              <form className="space-y-6">
+              <form className="space-y-6" onSubmit={doctorLogin} >
                 <div>
                   <label className="block text-sm font-medium">Email</label>
                   <input type="email" className="w-full border border-slate-300 text-black p-3 rounded-lg focus:ring focus:ring-black focus:border-black outline-none transition-all" value={doctorEmail} onChange={(e) => setDoctorEmail(e.target.value)} />
@@ -164,7 +185,16 @@ export default function Login() {
                   <input type="password" className="w-full border border-slate-300 text-black p-3 rounded-lg ffocus:ring focus:ring-black focus:border-black outline-none transition-all" value={doctorPassword} onChange={(e) => setDoctorPassword(e.target.value)} />
                 </div>
 
-                <button type="button" className="w-full py-3 rounded-lg font-medium bg-[#45b030] text-white transition-all" onClick={doctorLogin} disabled={isLoading}>
+                <button
+                  type="submit"
+                  className={isLoading
+                    ? 'bg-[#378d27] w-full py-3 rounded-lg font-medium text-white flex items-center justify-center gap-2 transition-all'
+                    : 'w-full py-3 rounded-lg font-medium bg-[#45b030] text-white transition-all'}
+                  disabled={isLoading}
+                >
+                  {isLoading && (
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+                  )}
                   {isLoading ? 'Logging in...' : 'Login'}
                 </button>
                 <button type="button" className="w-full mx-auto py-3 px-5 rounded-lg font-medium bg-white border transition-all" onClick={() => router.push('/register')}>
