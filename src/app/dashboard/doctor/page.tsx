@@ -17,7 +17,7 @@ const montserrat = Montserrat({
 export default function DoctorDashboard() {
   const router = useRouter();
   // Section Switcher
-  const [activeSection, setActiveSection] = useState('overview')
+  const [activeSection, setActiveSection] = useState('home')
 
 // DOCTOR OBJECT --------- DOCTOR OBJECT --------- DOCTOR OBJECT --------- DOCTOR OBJECT --------- DOCTOR OBJECT --------- DOCTOR OBJECT --------- DOCTOR OBJECT ---------
   interface Doctor {
@@ -280,10 +280,10 @@ export default function DoctorDashboard() {
   }
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-// SHOW UPCOMING CONFIRMED APPOINTMENTS ON OVERVIEW ---------- SHOW UPCOMING CONFIRMED APPOINTMENTS ON OVERVIEW ---------- SHOW UPCOMING CONFIRMED APPOINTMENTS ON OVERVIEW ---------- SHOW UPCOMING CONFIRMED APPOINTMENTS ON OVERVIEW ---------- SHOW UPCOMING CONFIRMED APPOINTMENTS ON OVERVIEW ---------- 
+// SHOW UPCOMING CONFIRMED APPOINTMENTS ON HOME ---------- SHOW UPCOMING CONFIRMED APPOINTMENTS ON HOME ---------- SHOW UPCOMING CONFIRMED APPOINTMENTS ON HOME ---------- SHOW UPCOMING CONFIRMED APPOINTMENTS ON HOME ---------- SHOW UPCOMING CONFIRMED APPOINTMENTS ON HOME ---------- 
   const [upcoming, setUpcoming] = useState<Appointment[]>([]);
   useEffect(() => {
-    if (!doctor || activeSection !== 'overview') return;
+    if (!doctor || activeSection !== 'home') return;
 
     const fetchConfirmedAppointments = async () => {
       const loggedInDoctorName = `${doctor.first_name ?? ''} ${doctor.last_name ?? ''}`.trim();
@@ -457,7 +457,7 @@ const [formattedDate, setFormattedDate] = useState('')
   return (
     <div className="font-sans min-h-screen bg-gray-50">
       <header className={`${montserrat.className}`}>
-        <div className="min-w-full h-16 bg-white shadow-lg flex items-center pl-10 gap-4">
+        <div className="min-w-full h-16 bg-white shadow-lg flex items-center px-4 gap-4">
           <Image 
             src="/logo.png"
             alt="Logo"
@@ -473,15 +473,15 @@ const [formattedDate, setFormattedDate] = useState('')
           <div className='bg-white shadow-md rounded-lg pb-4'>
             <nav>
               <ul className="gap-12 md:gap-24 flex justify-center">
-                <li  className={`flex gap-2 items-center p-2 cursor-pointer ${activeSection === 'overview' ? 'border-b-4 border-[#3ca444]' : ''}`}
-                  onClick={() => setActiveSection('overview')}>
+                <li  className={`flex gap-2 items-center p-2 cursor-pointer ${activeSection === 'home' ? 'border-b-4 border-[#3ca444]' : ''}`}
+                  onClick={() => setActiveSection('home')}>
                     <Image 
-                      src="/grid.svg"
-                      alt="Overview Icon"
+                      src="/home.svg"
+                      alt="Home Icon"
                       width={24}
                       height={24}
                     />
-                  <span className='hidden md:block text-lg font-semibold'>Overview</span>
+                  <span className='hidden md:block text-lg font-semibold'>Home</span>
                 </li>
                 <li className={`flex gap-2 items-center p-2 cursor-pointer ${activeSection === 'appointments' ? 'border-b-4 border-[#3ca444]' : ''}`}
                   onClick={() => setActiveSection('appointments')}>
@@ -503,29 +503,29 @@ const [formattedDate, setFormattedDate] = useState('')
                   />
                   <span className="hidden md:block text-lg font-semibold">Patient Records</span>
                 </li>
-                <li className={`flex gap-2 items-center p-2 cursor-pointer ${activeSection === 'profile' ? 'border-b-4 border-[#3ca444]' : ''}`}
-                  onClick={() => setActiveSection('profile')}>
+                <li className={`flex gap-2 items-center p-2 cursor-pointer ${activeSection === 'messaging' ? 'border-b-4 border-[#3ca444]' : ''}`}
+                  onClick={() => setActiveSection('messaging')}>
                   <Image 
-                    src="/user.svg"
-                    alt="Profile Icon"
+                    src="/message-circle.svg"
+                    alt="Messaging Icon"
                     width={24}
                     height={24}
                   />
-                  <span className="hidden md:block text-lg font-semibold">Profile</span>
+                  <span className="hidden md:block text-lg font-semibold">Messaging</span>
                 </li> 
               </ul>
             </nav>
           </div>
       </header>
 
-      <main className={`${montserrat.className} gradient-background min-h-screen p-3`}>
+      <main className={`${montserrat.className} gradient-background min-h-screen p-2`}>
         <div className='flex flex-col gap-4 p-2'>
 
           {/* Main Content */}
           <div className='col-span-5'>
 
-            {/* OVERVIEW SECTION */} 
-            {activeSection === 'overview' && 
+            {/* HOME SECTION */} 
+            {activeSection === 'home' && 
             <>
               <div className='flex flex-col gap-6'>
                 <div className='bg-white shadow-md rounded-lg p-4 md:p-6'>
@@ -812,10 +812,11 @@ const [formattedDate, setFormattedDate] = useState('')
                           </>
                         )}
                       </div>
+                      <button className='w-full bg-[#0d82ca] text-white p-2 rounded-md font-semibold cursor-pointer md:px-4 text-lg'>Mark Appointment as Complete</button>
                     </div>
 
                     {/* Mobile: Original expandable buttons section */}
-                    <div className={`flex gap-3 mt-4 ${expandedItems[appointment.id] ? '' : 'hidden'} md:hidden`}>
+                    <div className={`flex gap-3 mt-2 ${expandedItems[appointment.id] ? '' : 'hidden'} md:hidden`}>
                       {reschedulingId === appointment.id ? (
                         <>
                           <input
@@ -838,47 +839,40 @@ const [formattedDate, setFormattedDate] = useState('')
                           </button>
                         </>
                       ) : (
-                        <>
-                          {appointment.appointment_status === 'confirmed' ? (
-                            <button className='bg-[#3ca444] text-white p-2 rounded-md font-semibold cursor-pointer md:px-4 text-sm' onClick={() => ApptUnConfirm(appointment.id)}>
-                              Unconfirm
+                        <div className='flex flex-col gap-3'>
+                          <div className='flex gap-3'>
+                            {appointment.appointment_status === 'confirmed' ? (
+                              <button className='bg-[#3ca444] text-white p-2 rounded-md font-semibold cursor-pointer md:px-4 text-sm' onClick={() => ApptUnConfirm(appointment.id)}>
+                                Unconfirm
+                              </button>
+                            ) : (
+                              <button className='bg-[#3ca444] text-white p-2 rounded-md font-semibold cursor-pointer md:px-4 text-sm' onClick={() => ApptConfirm(appointment.id)}>
+                                Confirm
+                              </button>
+                            )}
+                            <button className='bg-gray-300 p-2 rounded-md font-semibold cursor-pointer text-[#008044] text-sm'
+                              onClick={() => {
+                                setReschedulingId(appointment.id);
+                                setRescheduleDate(appointment.appointment_date.slice(0, 10));
+                                setRescheduleTime(appointment.appointment_time);
+                              }}
+                            >
+                              Reschedule
                             </button>
-                          ) : (
-                            <button className='bg-[#3ca444] text-white p-2 rounded-md font-semibold cursor-pointer md:px-4 text-sm' onClick={() => ApptConfirm(appointment.id)}>
-                              Confirm
+                            <button className='bg-red-500 p-2 rounded-md font-semibold cursor-pointer text-white text-sm' onClick={() => ApptDelete(appointment.id)}>
+                              Delete
                             </button>
-                          )}
-                          <button className='bg-gray-300 p-2 rounded-md font-semibold cursor-pointer text-[#008044] text-sm'
-                            onClick={() => {
-                              setReschedulingId(appointment.id);
-                              setRescheduleDate(appointment.appointment_date.slice(0, 10));
-                              setRescheduleTime(appointment.appointment_time);
-                            }}
-                          >
-                            Reschedule
-                          </button>
-                          <button className='bg-red-500 p-2 rounded-md font-semibold cursor-pointer text-white text-sm' onClick={() => ApptDelete(appointment.id)}>
-                            Delete
-                          </button>
-                        </>
+                          </div>
+                          <div>
+                            <button className='w-full bg-[#0d82ca] text-white p-2 rounded-md font-semibold cursor-pointer md:px-4'>Mark Appointment as Complete</button>
+                          </div>
+                        </div>
                       )}
                     </div>
                   </li>
                 ))}
               </ul>
             </div>
-            </>
-            }
-
-            {/* PROFILE SECTION */}
-            {activeSection === 'profile' &&
-            <>
-                <div>
-                  <button className='bg-red-600 text-white text-xl p-2 rounded-md font-semibold cursor-pointer md:px-4 mt-6 mb-6' onClick={() => window.location.replace('/login')}>SIGN OUT</button>
-                </div>
-                <div>
-                  <button className='bg-red-600 text-white text-xl p-2 rounded-md font-semibold cursor-pointer md:px-4' onClick={handleDelete} disabled={loading}>DELETE ACCOUNT</button>
-                </div>
             </>
             }
 

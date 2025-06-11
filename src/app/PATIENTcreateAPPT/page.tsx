@@ -158,7 +158,7 @@ export default function CreateAppointment(){
                         </div>
 
                         <button type="button" className='bg-[#3ca444] text-white text-xl p-2 rounded-md font-semibold cursor-pointer md:px-4 mt-8' onClick={newApptSubmit}>Request New Appointment</button>
-                        <button type="button" className='bg-red-600 text-white text-xl p-2 rounded-md font-semibold cursor-pointer md:px-4' onClick={() => router.push('/dashboard/doctor')}>BACK</button>
+                        <button type="button" className='bg-red-600 text-white text-xl p-2 rounded-md font-semibold cursor-pointer md:px-4' onClick={() => router.push('/dashboard/patient')}>BACK</button>
                     </div>
                 </form>
             </main>

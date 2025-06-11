@@ -15,7 +15,7 @@ const montserrat = Montserrat({
 export default function PatientDashboard() {
   const router = useRouter();
   // Section Switcher
-  const [activeSection, setActiveSection] = useState('overview')
+  const [activeSection, setActiveSection] = useState('home')
 
 
 //PATIENT OBJECT --------- PATIENT OBJECT --------- PATIENT OBJECT --------- PATIENT OBJECT --------- PATIENT OBJECT --------- PATIENT OBJECT --------- PATIENT OBJECT --------- PATIENT OBJECT --------- PATIENT OBJECT --------- 
@@ -281,10 +281,10 @@ export default function PatientDashboard() {
 // --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-// SHOW UPCOMING CONFIRMED APPOINTMENTS ON OVERVIEW ---------- SHOW UPCOMING CONFIRMED APPOINTMENTS ON OVERVIEW ---------- SHOW UPCOMING CONFIRMED APPOINTMENTS ON OVERVIEW ---------- SHOW UPCOMING CONFIRMED APPOINTMENTS ON OVERVIEW ---------- SHOW UPCOMING CONFIRMED APPOINTMENTS ON OVERVIEW ---------- SHOW UPCOMING CONFIRMED APPOINTMENTS ON OVERVIEW ---------- SHOW UPCOMING CONFIRMED APPOINTMENTS ON OVERVIEW ----------
+// SHOW UPCOMING CONFIRMED APPOINTMENTS ON HOME ---------- SHOW UPCOMING CONFIRMED APPOINTMENTS ON HOME ---------- SHOW UPCOMING CONFIRMED APPOINTMENTS ON HOME ---------- SHOW UPCOMING CONFIRMED APPOINTMENTS ON HOME ---------- SHOW UPCOMING CONFIRMED APPOINTMENTS ON HOME ---------- SHOW UPCOMING CONFIRMED APPOINTMENTS ON HOME ---------- SHOW UPCOMING CONFIRMED APPOINTMENTS ON HOME ----------
   const [upcoming, setUpcoming] = useState<Appointment[]>([]);
     useEffect(() => {
-      if (!patient || activeSection !== 'overview') return;
+      if (!patient || activeSection !== 'home') return;
   
       const fetchConfirmedAppointments = async () => {
         const loggedInPatientName = `${patient.first_name ?? ''} ${patient.last_name ?? ''}`.trim();
@@ -372,7 +372,7 @@ export default function PatientDashboard() {
   return (
     <div className="font-sans min-h-screen bg-gray-50">
       <header className={`${montserrat.className}`}>
-        <div className="min-w-full h-16 bg-white shadow-lg flex items-center pl-4 gap-4">
+        <div className="min-w-full h-16 bg-white shadow-lg flex items-center px-4 gap-4">
           <Image 
             src="/logo.png"
             alt="Logo"
@@ -383,6 +383,7 @@ export default function PatientDashboard() {
             <h1 className="text-xl font-semibold text-slate-800">Patient Dashboard</h1>
             <p className="text-xs">{formattedDate}</p>
           </div>
+          <button className='bg-red-600 text-white text-xl p-2 rounded-md font-semibold cursor-pointer md:px-4 mt-6 mb-6 ml-auto' onClick={() => window.location.replace('/login')}>SIGN OUT</button>
         </div>
       </header>
 
@@ -394,14 +395,14 @@ export default function PatientDashboard() {
           <div className='bg-white shadow-md rounded-lg p-4'>
             <nav>
               <ul className="gap-12 md:gap-24 flex justify-center">
-                <li  className={`flex gap-2 items-center p-2 cursor-pointer ${activeSection === 'overview' ? 'border-b-4 border-[#3ca444]' : ''}`} onClick={() => setActiveSection('overview')}>
+                <li  className={`flex gap-2 items-center p-2 cursor-pointer ${activeSection === 'home' ? 'border-b-4 border-[#3ca444]' : ''}`} onClick={() => setActiveSection('home')}>
                   <Image 
-                    src="/grid.svg"
-                    alt="Overview Icon"
+                    src="/home.svg"
+                    alt="Home Icon"
                     width={24}
                     height={24}
                   />
-                  <span className='hidden md:block text-lg font-semibold'>Overview</span>
+                  <span className='hidden md:block text-lg font-semibold'>Home</span>
                 </li>
                 <li className={`flex gap-2 items-center p-2 cursor-pointer ${activeSection === 'appointments' ? 'border-b-4 border-[#3ca444]' : ''}`} onClick={() => setActiveSection('appointments')}>
                   <Image 
@@ -421,14 +422,14 @@ export default function PatientDashboard() {
                   />
                   <span className="hidden md:block text-lg font-semibold">Medical Records</span>
                 </li>
-                <li className={`flex gap-2 items-center p-2 cursor-pointer ${activeSection === 'profile' ? 'border-b-4 border-[#3ca444]' : ''}`} onClick={() => setActiveSection('profile')}>
+                <li className={`flex gap-2 items-center p-2 cursor-pointer ${activeSection === 'messaging' ? 'border-b-4 border-[#3ca444]' : ''}`} onClick={() => setActiveSection('messaging')}>
                   <Image 
-                    src="/user.svg"
-                    alt="Profile Icon"
+                    src="/message-circle.svg"
+                    alt="Message Icon"
                     width={24}
                     height={24}
                   />
-                  <span className="hidden md:block text-lg font-semibold">Profile</span>
+                  <span className="hidden md:block text-lg font-semibold">Messaging</span>
                 </li> 
               </ul>
             </nav>
@@ -437,8 +438,8 @@ export default function PatientDashboard() {
           {/* Main Content */}
           <div className='col-span-5'>
 
-            {/* OVERVIEW SECTION */} 
-            {activeSection === 'overview' && 
+            {/* HOME SECTION */} 
+            {activeSection === 'home' && 
             <>
               <div className='flex flex-col gap-6'>
                 <div className='bg-white shadow-md rounded-lg p-4 md:p-6'>
@@ -715,18 +716,6 @@ export default function PatientDashboard() {
                                     </li>
                                   ))}
                 </ul>
-              </div>
-            </>
-            }
-
-            {/* PROFILE SECTION */}
-            {activeSection === 'profile' &&
-            <>
-              <div>
-                <button className='bg-red-600 text-white text-xl p-2 rounded-md font-semibold cursor-pointer md:px-4 mt-6 mb-6' onClick={() => window.location.replace('/login')}>SIGN OUT</button>
-              </div>
-              <div>
-                <button className='bg-red-600 text-white text-xl p-2 rounded-md font-semibold cursor-pointer md:px-4' onClick={handleDelete} disabled={loading}>DELETE ACCOUNT</button>
               </div>
             </>
             }
