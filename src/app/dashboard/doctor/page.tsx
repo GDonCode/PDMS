@@ -617,39 +617,6 @@ const [formattedDate, setFormattedDate] = useState('')
                     </div>
                   </div>
                 </div>
-
-                {/* BLOG */}
-                <div className='bg-white shadow=md rounded-lg p-4 md:p-6 flex flex-col gap-3'>
-                  <div className='flex items-center gap-2 border-b-4 border-[#3ca444]'>
-                    <Image 
-                      src="/info.svg"
-                      width={16}
-                      height={16}
-                      alt="Information Icon"
-                    />
-                    <p className='font-[550] text-lg'>Blog Posts</p>
-                    
-                  </div>
-                
-                
-                  {posts.map((post) => (
-                    <div key={post.id} className='bg-gray-50 rounded-md shadow-lg p-4'>
-                      <div className='flex flex-col mb-4 gap-1'>
-                        <p className='font-[550] text-lg underline'>{post.blog_title}</p>
-                        <div className='flex justify-between'>
-                          <p className='text-sm'>
-                            by <span className='font-semibold'>{post.blog_author}</span>
-                          </p>
-                          <p className='text-sm'>{new Date(post.created_at).toLocaleDateString()}</p>
-                        </div>
-                      </div> 
-                      <div>{post.blog_preview}</div>
-                      <button className='mt-3 bg-[#008044] text-white p-2 rounded-sm'>View Post</button>
-                    </div>
-                  ))}
-                </div>
-
-
               </div>
             </>
             }

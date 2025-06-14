@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 import Cookies from 'js-cookie';
 import { useRouter } from 'next/navigation'
 import supabase from '@/app/lib/supabaseClient';
-import { Calendar, Clock, User, CalendarDays, CircleChevronRight, UserRoundSearch, SlidersHorizontal, LucideDivideCircle } from "lucide-react";
+import { Calendar, Clock, CalendarDays} from "lucide-react";
 const montserrat = Montserrat({
   subsets: ['latin'],
   weight: ['400', '600'], // Add weights as needed
@@ -531,38 +531,6 @@ export default function PatientDashboard() {
                     </div>
                   </div>
                 </div>
-
-                {/* BLOG */}
-                <div className='bg-white shadow=md rounded-lg p-4 md:p-6 flex flex-col gap-3'>
-                  <div className='flex items-center gap-2 border-b-4 border-[#008044]'>
-                    <Image 
-                      src="/info.svg"
-                      width={16}
-                      height={16}
-                      alt="Information Icon"
-                    />
-                    <p className='font-[550] text-lg'>Blog Posts</p>
-                  </div>
-
-
-                  {posts.map((post) => (
-                    <div key={post.id} className='bg-gray-100 rounded-md drop-shadow-lg p-4'>
-                      <div className='flex flex-col mb-4 gap-1'>
-                        <p className='font-[550] text-lg underline'>{post.blog_title}</p>
-                        <div className='flex justify-between'>
-                          <p className='text-sm'>
-                            by <span className='font-semibold'>{post.blog_author}</span>
-                          </p>
-                          <p className='text-sm'>{new Date(post.created_at).toLocaleDateString()}</p>
-                        </div>
-                      </div> 
-                      <div>{post.blog_preview}</div>
-                      <button className='mt-3 bg-[#008044] text-white p-2 rounded-sm'>View Post</button>
-                    </div>
-                  ))}
-                </div>
-
-
               </div>
             </>
             }
